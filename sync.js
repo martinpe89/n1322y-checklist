@@ -93,13 +93,13 @@
   function pill() {
     const n = queue.length;
     if (authed === false && navigator.onLine) {
-      pillEl.textContent = "Conectar"; pillEl.style.display = "block"; pillEl.style.color = "var(--amber,#FFB020)"; return;
+      pillEl.textContent = "Connect"; pillEl.style.display = "block"; pillEl.style.color = "var(--amber,#FFB020)"; return;
     }
     if (!n) { pillEl.style.display = "none"; return; }
     pillEl.style.display = "block";
     const needPin = queue.some((o) => o.needPin);
     if (!navigator.onLine) { pillEl.textContent = "Offline · " + n; pillEl.style.color = "var(--dim,#77848F)"; }
-    else if (needPin) { pillEl.textContent = "Firma pendiente"; pillEl.style.color = "var(--amber,#FFB020)"; }
+    else if (needPin) { pillEl.textContent = "Signature pending"; pillEl.style.color = "var(--amber,#FFB020)"; }
     else { pillEl.textContent = "Sync · " + n; pillEl.style.color = "var(--cyan,#39B7F0)"; }
   }
 
@@ -124,12 +124,12 @@
   /* ---------- código de acceso -------------------------------------------- */
   function askCode() {
     const el = sheet(
-      '<div class="k">Enlace de datos · N1322Y</div>' +
-      "<h3>Código de acceso</h3>" +
-      "<p>Respalda los vuelos en el servidor. Sin código, la app opera igual en modo local — los datos quedan en este dispositivo.</p>" +
-      '<input id="syCode" class="syncIn code" type="password" autocomplete="off" placeholder="Código compartido">' +
-      '<div id="syErr" class="err">Código incorrecto</div>' +
-      '<div class="syncRow"><button id="syLater">Luego</button><button id="syGo" class="go">Conectar</button></div>'
+      '<div class="k">Datalink · N1322Y</div>' +
+      "<h3>Access code</h3>" +
+      "<p>Backs up every flight to the server. Without it the app still runs fully local — data stays on this device.</p>" +
+      '<input id="syCode" class="syncIn code" type="password" autocomplete="off" placeholder="Shared code">' +
+      '<div id="syErr" class="err">Invalid code</div>' +
+      '<div class="syncRow"><button id="syLater">Later</button><button id="syGo" class="go">Connect</button></div>'
     );
     el.querySelector("#syLater").onclick = closeSheet;
     const go = async () => {
@@ -152,15 +152,15 @@
   function askRegisterPin(sp) {
     if (sheetEl) return;
     const el = sheet(
-      '<div class="k">Primer ingreso</div>' +
+      '<div class="k">First entry</div>' +
       "<h3>" + sp.name + "</h3>" +
-      "<p>Clave de firma — 4 dígitos. Se exige una sola vez por vuelo, al cierre: el cierre queda firmado por quien voló. No reutilices claves de banco o correo.</p>" +
-      '<span class="syncLbl">Clave de firma — 4 dígitos</span>' +
+      "<p>Signature PIN — 4 digits. Required once per flight, at close-out: the close-out is signed by whoever flew. Do not reuse a banking or email PIN.</p>" +
+      '<span class="syncLbl">PIN — 4 digits</span>' +
       '<input id="syP1" class="syncIn" type="password" inputmode="numeric" autocomplete="off" maxlength="4">' +
-      '<span class="syncLbl">Repítela</span>' +
+      '<span class="syncLbl">Repeat it</span>' +
       '<input id="syP2" class="syncIn" type="password" inputmode="numeric" autocomplete="off" maxlength="4">' +
       '<div id="syErr" class="err"></div>' +
-      '<div class="syncRow"><button id="syLater">Luego</button><button id="syGo" class="go">Guardar clave</button></div>'
+      '<div class="syncRow"><button id="syLater">Later</button><button id="syGo" class="go">Save PIN</button></div>'
     );
     const p1 = el.querySelector("#syP1"), p2 = el.querySelector("#syP2"), err = el.querySelector("#syErr");
     digitsOnly(p1, 4); digitsOnly(p2, 4);
@@ -168,16 +168,16 @@
     el.querySelector("#syLater").onclick = closeSheet;
     el.querySelector("#syGo").onclick = async () => {
       err.classList.remove("on");
-      if (!/^\d{4}$/.test(p1.value)) { err.textContent = "La clave debe tener 4 dígitos"; err.classList.add("on"); return p1.focus(); }
-      if (p1.value !== p2.value) { err.textContent = "Las claves no coinciden"; err.classList.add("on"); p2.value = ""; return p2.focus(); }
+      if (!/^\d{4}$/.test(p1.value)) { err.textContent = "PIN must be exactly 4 digits"; err.classList.add("on"); return p1.focus(); }
+      if (p1.value !== p2.value) { err.textContent = "PINs do not match"; err.classList.add("on"); p2.value = ""; return p2.focus(); }
       try {
         const r = await fetch(API + "/partner/" + sp.id + "/pin", {
           method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ newPin: p1.value }),
         });
         if (r.ok) { sp.hasPin = true; closeSheet(); }
-        else { const j = await r.json().catch(() => ({})); err.textContent = j.error || "No se pudo guardar"; err.classList.add("on"); }
-      } catch (e) { err.textContent = "Sin conexión — intenta luego"; err.classList.add("on"); }
+        else { const j = await r.json().catch(() => ({})); err.textContent = j.error || "Could not save"; err.classList.add("on"); }
+      } catch (e) { err.textContent = "No connection — try again later"; err.classList.add("on"); }
     };
     setTimeout(() => p1.focus(), 120);
   }
@@ -198,12 +198,12 @@
   function askSign(op) {
     if (sheetEl) return;
     const el = sheet(
-      '<div class="k">Firma del vuelo</div>' +
-      "<h3>" + (op.pilot || "Piloto") + "</h3>" +
-      "<p>El cierre genera el cobro de mantenimiento. Clave de firma — ingresar.</p>" +
+      '<div class="k">Flight sign-off</div>' +
+      "<h3>" + (op.pilot || "Pilot") + "</h3>" +
+      "<p>Close-out generates the maintenance charge. Signature PIN — enter.</p>" +
       '<input id="syP" class="syncIn" type="password" inputmode="numeric" autocomplete="off" maxlength="4">' +
       '<div id="syErr" class="err"' + (op.pinError ? ' style="display:block"' : "") + ">" + (op.pinError || "") + "</div>" +
-      '<div class="syncRow"><button id="syLater">Luego</button><button id="syGo" class="go">Firmar cierre</button></div>'
+      '<div class="syncRow"><button id="syLater">Later</button><button id="syGo" class="go">Sign close-out</button></div>'
     );
     const p = el.querySelector("#syP");
     digitsOnly(p, 4);
@@ -331,7 +331,7 @@
         const j = await r.json().catch(() => ({}));
         const msg = j.error || "";
         if (/PIN required/i.test(msg)) { op.needPin = true; op.pin = null; saveQ(); askSign(op); return "wait"; }
-        if (/Invalid PIN/i.test(msg)) { op.needPin = true; op.pin = null; op.pinError = "Clave incorrecta"; saveQ(); askSign(op); return "wait"; }
+        if (/Invalid PIN/i.test(msg)) { op.needPin = true; op.pin = null; op.pinError = "Invalid PIN"; saveQ(); askSign(op); return "wait"; }
         if (/already closed/i.test(msg)) { closedDone[op.lid] = 1; lsSet(CKEY, closedDone); return true; }
         return true; // otra validación definitiva: no bloquear la cola
       }
