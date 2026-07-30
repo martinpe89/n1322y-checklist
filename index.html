@@ -835,39 +835,131 @@ function tap(pi,ii){
   if(on&&was)beep(1);
 }
 
-/* ---------- tach capture ---------- */
+/* ---------- tach capture: dos fotos (Garmin ENG HRS + tacómetro TOTAL HOURS)
+   con lectura automática de dígitos (OCR local, editable por el piloto) ----- */
 function capCard(it,done,ii){
   const d=F.cap[it.id]||{};
+  const shot=(k,img,cap)=>`<figure style="margin:0"><figcaption>${cap}</figcaption>
+    <div class="shot" data-shoot="${it.id}.${k}" style="aspect-ratio:1/1;margin-bottom:0">${img
+      ? `<img src="${img}" alt="">`
+      : `<span class="ph">${CAM}<div>Tomar foto</div></span>`}</div></figure>`;
   return `<div class="cap${done?" done":""}" id="cap-${it.id}">
     <button class="captop" data-cap="${ii}" data-id="${it.id}">
       <span class="box${done?" on":""}">${CHK}</span>
       <span class="tx">${it.tag?`<span class="tag c">${esc(it.tag)}</span>`:""}
       <span class="ob">${esc(it.o)}</span><span class="ac">${esc(it.a)}</span>
       <span class="nt">${esc(it.n)}</span></span></button>
-    <div class="shot" data-shoot="${it.id}">${d.img
-      ? `<img src="${d.img}" alt="Tachometer">`
-      : `<span class="ph">${CAM}<div>Tap to photograph</div></span>`}</div>
-    ${d.img?`<button class="retake" data-shoot="${it.id}">Retake photo</button>`:""}
+    <div class="pair" style="margin-bottom:12px">
+      ${shot("E",d.imgE,"ENGINE &middot; ENG HRS (Garmin)")}
+      ${shot("A",d.imgA,"AIRCRAFT &middot; TOTAL HOURS")}
+    </div>
     <div class="hrs">
       <div class="fld"><label>Engine hours</label>
         <input inputmode="decimal" data-h="${it.id}.eng" placeholder="0.0" class="${d.eng?"ok":""}" value="${esc(d.eng??"")}"></div>
       <div class="fld"><label>Aircraft hours</label>
         <input inputmode="decimal" data-h="${it.id}.ac" placeholder="0.0" class="${d.ac?"ok":""}" value="${esc(d.ac??"")}"></div>
     </div>
-    <div class="hint" id="hint-${it.id}">Photo and both readings required</div>
-    <input type="file" accept="image/*" capture="environment" class="hide" data-file="${it.id}">
+    <div class="sl" id="ocr-${it.id}" style="margin-top:8px"></div>
+    <div class="hint" id="hint-${it.id}">Both photos and both readings required</div>
+    <input type="file" accept="image/*" capture="environment" class="hide" data-file="${it.id}.E">
+    <input type="file" accept="image/*" capture="environment" class="hide" data-file="${it.id}.A">
   </div>`;
 }
-const capReady=id=>{const d=F.cap[id]||{};return !!(d.img&&d.eng&&d.ac)};
+const capReady=id=>{const d=F.cap[id]||{};return !!(d.imgE&&d.imgA&&d.eng&&d.ac)};
+
+/* --- OCR de tacómetro: Tesseract.js perezoso; la lectura siempre es editable --- */
+let OCRW=null,OCRP=null;
+function loadOCR(){
+  if(OCRW)return Promise.resolve(OCRW);
+  if(OCRP)return OCRP;
+  OCRP=new Promise((res,rej)=>{
+    if(window.Tesseract)return res();
+    const s=document.createElement("script");
+    s.src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.1.1/tesseract.min.js";
+    s.onload=res;s.onerror=()=>rej(new Error("cdn"));document.head.appendChild(s);
+  }).then(async()=>{OCRW=await Tesseract.createWorker("eng");return OCRW});
+  return OCRP;
+}
+function prepOCR(dataUrl){
+  return new Promise(res=>{const im=new Image();im.onload=()=>{
+    const W=1200,sc=Math.min(2,W/im.width);
+    const cv=document.createElement("canvas");
+    cv.width=Math.round(im.width*sc);cv.height=Math.round(im.height*sc);
+    const x=cv.getContext("2d");x.filter="grayscale(1) contrast(1.7)";
+    x.drawImage(im,0,0,cv.width,cv.height);
+    res(cv.toDataURL("image/png"));};im.src=dataUrl;});
+}
+function pickReading(text,kind){
+  const t=String(text||"").toUpperCase().replace(/O/g,"0").replace(/,/g,".");
+  if(kind==="eng"){
+    const m=t.match(/ENG\s*HRS?[^0-9]{0,6}([0-9]{3,6}(?:\.[0-9])?)/);
+    if(m)return trimNum(m[1]);
+  }
+  /* grupos "0632 9" del tambor (décimas en rueda aparte) */
+  const g=t.match(/([0-9]{3,5})\s+([0-9])(?![0-9])/);
+  if(g)return trimNum(g[1]+"."+g[2]);
+  const nums=(t.match(/[0-9]{3,6}(?:\.[0-9])?/g)||[]).sort((a,b)=>b.length-a.length);
+  for(const n of nums){
+    if(n.includes("."))return trimNum(n);
+    if(n.length>=5)return trimNum(n.slice(0,-1)+"."+n.slice(-1));
+  }
+  return nums.length?trimNum(nums[0]):null;
+}
+function trimNum(s){
+  const v=parseFloat(s);
+  return isFinite(v)&&v>0?String(Math.round(v*10)/10):null;
+}
+async function readTach(dataUrl,kind){
+  const w=await loadOCR();
+  const img=await prepOCR(dataUrl);
+  await w.setParameters({tessedit_char_whitelist:"0123456789./ENGHRSTOALU "});
+  const {data}=await w.recognize(img);
+  return pickReading(data&&data.text,kind);
+}
+/* precargar el motor OCR cuando hay red, para que en cabina funcione sin señal */
+setTimeout(()=>{try{if(navigator.onLine)loadOCR().catch(()=>{})}catch(e){}},2500);
+function composite(d){
+  if(!(d.imgE&&d.imgA)){d.img=d.imgE||d.imgA||null;return;}
+  const load=s=>new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.src=s});
+  Promise.all([load(d.imgE),load(d.imgA)]).then(([a,b])=>{
+    const H=900,wa=a.width*H/a.height,wb=b.width*H/b.height;
+    const cv=document.createElement("canvas");cv.width=Math.round(wa+wb);cv.height=H;
+    const x=cv.getContext("2d");x.fillStyle="#000";x.fillRect(0,0,cv.width,H);
+    x.drawImage(a,0,0,wa,H);x.drawImage(b,wa,0,wb,H);
+    d.img=cv.toDataURL("image/jpeg",.7);save();
+  }).catch(()=>{});
+}
+async function ocrFill(id,k,img){
+  const key=k==="E"?"eng":"ac";
+  const note=$("#ocr-"+id);
+  if(note)note.textContent="Leyendo la foto…";
+  let v=null;
+  try{v=await readTach(img,key)}catch(e){}
+  const d=F.cap[id]=F.cap[id]||{};
+  const inp=app.querySelector(`[data-h="${id}.${key}"]`);
+  if(v!=null&&!d[key]){
+    d[key]=v;
+    if(inp){inp.value=v;inp.classList.add("ok")}
+    if(capReady(id)){const h=$("#hint-"+id);if(h)h.classList.remove("on")}
+    save();
+    if(note)note.textContent="Lectura automática — verifícala antes de marcar.";
+  }else if(v==null){
+    if(note)note.textContent=d[key]?"":"No se pudo leer la foto — escribe la lectura.";
+  }else if(note)note.textContent="";
+}
 function wire(pi){
   app.querySelectorAll("[data-shoot]").forEach(el=>el.onclick=()=>
     app.querySelector(`[data-file="${el.dataset.shoot}"]`).click());
   app.querySelectorAll("[data-file]").forEach(inp=>inp.onchange=async e=>{
     const f=e.target.files[0]; if(!f)return;
-    const id=inp.dataset.file;
-    try{ (F.cap[id]=F.cap[id]||{}).img=await shrink(f); }
+    const [id,k]=inp.dataset.file.split(".");
+    let img;
+    try{ img=await shrink(f); }
     catch(err){ return alert("That photo could not be read. Take it again.") }
-    save(); vRun();
+    const d=F.cap[id]=F.cap[id]||{};
+    if(k==="E")d.imgE=img; else d.imgA=img;
+    composite(d); save(); vRun();
+    ocrFill(id,k,img);
   });
   app.querySelectorAll(".captop").forEach(b=>b.onclick=()=>{
     const id=b.dataset.id, ii=+b.dataset.cap;
