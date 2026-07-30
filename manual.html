@@ -1,0 +1,122 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+  @page{size:letter;margin:0}
+  :root{--bg:#07090C;--panel:#10141A;--line:#242D39;--fg:#E6EDF5;--dim:#77848F;
+    --dimmer:#4A5560;--cyan:#39B7F0;--green:#2FD07B;--amber:#FFB020;--magenta:#E255A6}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:8.5in;height:11in;background:var(--bg);color:var(--fg);
+    font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-print-color-adjust:exact}
+  .mono{font-family:'SF Mono','Roboto Mono',Menlo,Consolas,monospace}
+  .page{padding:.55in .6in .45in;height:11in;display:flex;flex-direction:column}
+  .head{display:flex;align-items:flex-start;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:14px}
+  .head .k{font-size:8.5px;letter-spacing:.24em;color:var(--magenta);text-transform:uppercase;margin-bottom:8px}
+  .head h1{font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1}
+  .head h1 small{display:block;font-size:9.5px;font-weight:500;color:var(--dim);letter-spacing:.14em;margin-top:7px;text-transform:uppercase}
+  .head .url{font-size:11px;color:var(--cyan);letter-spacing:.04em;margin-top:10px}
+  .plane{width:2.5in;margin-top:-4px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+  .card{border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:13px 15px}
+  .card.full{grid-column:1/-1}
+  .card h2{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan);margin-bottom:9px;display:flex;align-items:baseline;gap:8px}
+  .card h2 .n{color:var(--magenta)}
+  .card li{list-style:none;font-size:10.5px;line-height:1.5;color:var(--fg);padding-left:14px;position:relative;margin-bottom:5px}
+  .card li:last-child{margin-bottom:0}
+  .card li::before{content:"›";position:absolute;left:0;color:var(--dimmer)}
+  .card b{color:var(--green);font-weight:600}
+  .card .act{color:var(--cyan);letter-spacing:.06em;font-size:9.5px;text-transform:uppercase}
+  .card .warn{color:var(--amber)}
+  .pills{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .pill{font-size:8px;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--line);
+    border-radius:999px;padding:4px 9px;color:var(--dim)}
+  .pill i{font-style:normal}
+  .pill .c{color:var(--cyan)} .pill .a{color:var(--amber)} .pill .g{color:var(--green)}
+  .rules{border-color:rgba(255,176,32,.45);background:rgba(255,176,32,.06)}
+  .rules h2{color:var(--amber)}
+  .foot{margin-top:auto;border-top:1px solid var(--line);padding-top:11px;display:flex;justify-content:space-between;align-items:baseline}
+  .foot span{font-size:8.5px;letter-spacing:.14em;color:var(--dimmer);text-transform:uppercase}
+</style></head>
+<body><div class="page">
+
+  <div class="head">
+    <div>
+      <div class="k mono">Quick Reference &middot; Partner Edition</div>
+      <h1>N1322Y<small>T182T Checklist App &middot; How to use it</small></h1>
+      <div class="url mono">checklist.deep.com.co</div>
+    </div>
+    <svg class="plane" viewBox="0 0 640 290" xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" stroke="#39B7F0" stroke-opacity=".8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M86 128 C82 148 82 178 86 198"/>
+        <path d="M92 163 C92 158 96 155 100 155 C104 155 106 158 106 163 C106 168 104 171 100 171 C96 171 92 168 92 163 Z"/>
+        <path d="M106 158 C120 150 142 146 166 145"/>
+        <path d="M166 145 C186 122 204 112 228 108"/>
+        <path d="M330 108 C346 122 360 130 378 134"/>
+        <path d="M378 134 C420 140 452 142 476 142"/>
+        <path d="M446 141 C462 118 476 92 486 72 C489 66 494 62 500 62 L534 62 C541 62 544 67 542 73 L522 146"/>
+        <path d="M480 148 L596 143 C602 143 602 151 596 152 L486 158"/>
+        <path d="M522 146 C518 152 512 156 504 158"/>
+        <path d="M106 176 C120 184 150 190 190 193 L330 196 C390 196 450 188 504 158"/>
+        <path d="M106 158 L106 176"/>
+        <path d="M196 108 C202 100 212 96 224 95 L400 90 C408 90 410 96 404 99 L338 106 L228 110 Z"/>
+        <path d="M208 178 L258 110"/>
+        <path d="M152 192 L160 226"/><circle cx="162" cy="238" r="11"/>
+        <path d="M320 196 C330 208 340 220 348 228"/><circle cx="352" cy="240" r="13"/>
+      </g>
+    </svg>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2 class="mono"><span class="n">01</span> First time &middot; once per device</h2>
+      <li>Open <b>checklist.deep.com.co</b> on your phone or tablet. Add it to your home screen.</li>
+      <li>Tap <span class="act">Connect</span> &rarr; enter the shared access code (ask Martin).</li>
+      <li>Set your <b>4-digit signature PIN</b> when asked. It signs your flight close-outs — keep it yours.</li>
+    </div>
+
+    <div class="card">
+      <h2 class="mono"><span class="n">02</span> Before engine start</h2>
+      <li>Select your name &rarr; <span class="act">Begin preflight</span>.</li>
+      <li>Tap every line as you complete it. Each checklist announces when it is complete.</li>
+      <li>Tachometer card: photograph the <b>Garmin ENG HRS</b> and the <b>TOTAL HOURS</b> drum. Readings fill in automatically — verify them, enter the tenths, then check the item.</li>
+    </div>
+
+    <div class="card">
+      <h2 class="mono"><span class="n">03</span> In flight</h2>
+      <li><b>No signal required.</b> Everything is saved on the device and syncs by itself when coverage returns.</li>
+      <li>Status pill, bottom-right:</li>
+      <div class="pills mono">
+        <span class="pill"><i class="a">CONNECT</i> — enter code</span>
+        <span class="pill"><i class="c">SYNC</i> — uploading</span>
+        <span class="pill">OFFLINE — will sync later</span>
+        <span class="pill"><i class="a">SIGNATURE PENDING</i> — tap &amp; sign</span>
+        <span class="pill"><i class="g">HIDDEN</i> — all synced</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="mono"><span class="n">04</span> After shutdown</h2>
+      <li><b>Securing Airplane</b> checklist &rarr; photograph both gauges again.</li>
+      <li><span class="act">Close out flight</span> &rarr; <span class="act">Save to logbook</span> &rarr; sign with your PIN.</li>
+      <li>Your hours, photos and maintenance share are now on record for all partners.</li>
+    </div>
+
+    <div class="card full">
+      <h2 class="mono"><span class="n">05</span> Hours &amp; money</h2>
+      <li><b>Logbook</b>: hours per partner and per flight, with tachometer photo evidence. <b>Partners</b>: set the maintenance rate per hour. <b>Export CSV</b> for accounting.</li>
+    </div>
+
+    <div class="card full rules">
+      <h2 class="mono">Rules of the air</h2>
+      <li>One open flight at a time — the server enforces it.</li>
+      <li>The shutdown reading can never be lower than the start reading.</li>
+      <li>Hours flown without a closed flight show up as a <span class="warn">GAP</span>. The system sees them.</li>
+      <li class="warn">Cockpit aid only — the approved POH on board governs.</li>
+    </div>
+  </div>
+
+  <div class="foot mono">
+    <span>N1322Y &middot; Cessna T182T NAV III &middot; GFC 700 AFCS</span>
+    <span>Takeoff is optional. Coming home never is.</span>
+  </div>
+
+</div></body></html>
