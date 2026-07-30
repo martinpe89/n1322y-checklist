@@ -3,11 +3,7 @@
   "version": "1.0.0",
   "description": "Cessna T182T NAV III flight checklist with server backend",
   "main": "api/index.js",
-  "scripts": {
-    "dev": "vercel dev",
-    "build": "vercel build",
-    "migrate": "node scripts/migrate.js"
-  },
+  "scripts": {},
   "dependencies": {
     "pg": "^8.11.3"
   },
