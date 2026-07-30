@@ -9,8 +9,7 @@
     "migrate": "node scripts/migrate.js"
   },
   "dependencies": {
-    "pg": "^8.11.3",
-    "scryptsy": "^2.1.8"
+    "pg": "^8.11.3"
   },
   "devDependencies": {}
 }

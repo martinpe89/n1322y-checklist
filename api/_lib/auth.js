@@ -1,10 +1,11 @@
 const crypto = require('crypto');
-const scryptsy = require('scryptsy');
+
+const SCRYPT_OPTS = { N: 16384, r: 8, p: 1 };
 
 function hashPin(pin) {
-  // Scrypt con parámetros estándar: N=16384, r=8, p=1
+  // Scrypt con parámetros estándar: N=16384, r=8, p=1 (crypto nativo de Node)
   const salt = crypto.randomBytes(16);
-  const hash = scryptsy(Buffer.from(pin), salt, 16384, 8, 1, 32);
+  const hash = crypto.scryptSync(Buffer.from(pin), salt, 32, SCRYPT_OPTS);
   return Buffer.concat([salt, hash]).toString('base64');
 }
 
@@ -13,7 +14,7 @@ function verifyPin(pin, hash) {
     const buffer = Buffer.from(hash, 'base64');
     const salt = buffer.slice(0, 16);
     const storedHash = buffer.slice(16);
-    const testHash = scryptsy(Buffer.from(pin), salt, 16384, 8, 1, 32);
+    const testHash = crypto.scryptSync(Buffer.from(pin), salt, 32, SCRYPT_OPTS);
     return crypto.timingSafeEqual(testHash, storedHash);
   } catch (e) {
     return false;
