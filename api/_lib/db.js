@@ -1,4 +1,8 @@
-const { Pool } = require('pg');
+const { Pool, types } = require('pg');
+
+// Postgres devuelve NUMERIC como string; la app trabaja con números.
+// Los valores del tacómetro (7,1) caben sin pérdida en un float de JS.
+types.setTypeParser(1700, (v) => (v === null ? null : parseFloat(v)));
 
 let pool = null;
 
