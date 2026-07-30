@@ -1,7 +1,8 @@
 const { query } = require('./_lib/db');
 const { ok, serverError } = require('./_lib/response');
+const { requireSession } = require('./_lib/middleware');
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -11,7 +12,7 @@ export default async function handler(req, res) {
 
     // Obtener roster
     const partnersResult = await query(
-      'SELECT id, name FROM partners WHERE archived = false ORDER BY created_at ASC'
+      'SELECT id, name, pin_hash FROM partners WHERE archived = false ORDER BY created_at ASC'
     );
 
     // Obtener settings (tarifa, moneda)
@@ -49,7 +50,7 @@ export default async function handler(req, res) {
     const lastReading = lastFlightResult.rows[0] || null;
 
     return ok(res, {
-      roster: partnersResult.rows.map(p => ({ id: p.id, name: p.name })),
+      roster: partnersResult.rows.map(p => ({ id: p.id, name: p.name, hasPin: !!p.pin_hash })),
       rate: settings.rate || null,
       currency: settings.currency || 'USD',
       openFlight: openFlight ? {
@@ -70,3 +71,5 @@ export default async function handler(req, res) {
     return serverError(res, error.message);
   }
 }
+
+export default requireSession(handler);

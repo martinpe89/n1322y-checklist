@@ -21,12 +21,13 @@ export default async function handler(req, res) {
 
     // Obtener los partners activos
     const result = await query(
-      'SELECT id, name FROM partners WHERE archived = false ORDER BY created_at ASC'
+      'SELECT id, name, pin_hash FROM partners WHERE archived = false ORDER BY created_at ASC'
     );
 
     const partners = result.rows.map(p => ({
       id: p.id,
       name: p.name,
+      hasPin: !!p.pin_hash,
     }));
 
     // Generar un session token temporal (sin asociar a un partner específico)

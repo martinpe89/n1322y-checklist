@@ -10,7 +10,7 @@ async function handleClose(req, res) {
 
   try {
     const { id } = req.query;
-    const { engEnd, acEnd, photoStartUrl, photoEndUrl, pin, unchecked } = req.body;
+    const { engStart, acStart, engEnd, acEnd, photoStartUrl, photoEndUrl, pin, unchecked } = req.body;
 
     // Obtener el vuelo
     const flightResult = await query(
@@ -29,12 +29,16 @@ async function handleClose(req, res) {
       return badRequest(res, 'Flight already closed');
     }
 
+    // Las lecturas iniciales llegan al cierre (el vuelo abre antes de leer el tacómetro)
+    const finalEngStart = engStart != null ? engStart : flight.eng_start;
+    const finalAcStart = acStart != null ? acStart : flight.ac_start;
+
     // Validaciones
-    if (engEnd !== null && flight.eng_start !== null && engEnd < flight.eng_start) {
+    if (engEnd != null && finalEngStart != null && Number(engEnd) < Number(finalEngStart)) {
       return badRequest(res, 'Engine hours cannot decrease');
     }
 
-    if (acEnd !== null && flight.ac_start !== null && acEnd < flight.ac_start) {
+    if (acEnd != null && finalAcStart != null && Number(acEnd) < Number(finalAcStart)) {
       return badRequest(res, 'Aircraft hours cannot decrease');
     }
 
@@ -56,15 +60,19 @@ async function handleClose(req, res) {
       }
     }
 
-    // Calcular gap: eng_start menos el eng_end del vuelo anterior
+    // Calcular gap: eng_start de este vuelo menos el eng_end del vuelo anterior.
+    // Un gap positivo = el avión voló horas que nadie registró.
     let gap = null;
-    if (engEnd !== null) {
+    if (finalEngStart != null) {
       const lastFlightResult = await query(
-        `SELECT eng_end FROM flights WHERE closed_at IS NOT NULL ORDER BY closed_at DESC LIMIT 1`
+        `SELECT eng_end FROM flights
+         WHERE closed_at IS NOT NULL AND id != $1 AND eng_end IS NOT NULL
+         ORDER BY closed_at DESC LIMIT 1`,
+        [id]
       );
 
-      if (lastFlightResult.rowCount > 0 && lastFlightResult.rows[0].eng_end !== null) {
-        gap = flight.eng_start - lastFlightResult.rows[0].eng_end;
+      if (lastFlightResult.rowCount > 0) {
+        gap = Number(finalEngStart) - Number(lastFlightResult.rows[0].eng_end);
       }
     }
 
@@ -72,15 +80,17 @@ async function handleClose(req, res) {
     const now = new Date();
     await query(
       `UPDATE flights SET
-        eng_end = $1,
-        ac_end = $2,
-        photo_start = $3,
-        photo_end = $4,
-        unchecked = $5,
-        gap = $6,
-        closed_at = $7
-       WHERE id = $8`,
-      [engEnd, acEnd, photoStartUrl, photoEndUrl, unchecked || 0, gap, now, id]
+        eng_start = $1,
+        ac_start = $2,
+        eng_end = $3,
+        ac_end = $4,
+        photo_start = $5,
+        photo_end = $6,
+        unchecked = $7,
+        gap = $8,
+        closed_at = $9
+       WHERE id = $10`,
+      [finalEngStart, finalAcStart, engEnd, acEnd, photoStartUrl, photoEndUrl, unchecked || 0, gap, now, id]
     );
 
     // Obtener las horas calculadas
