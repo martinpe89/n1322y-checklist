@@ -154,6 +154,14 @@
     } finally { flushing = false; pill(); }
   }
 
+  // 5xx = transitorio: lanzar para reintentar después; rendirse tras muchos intentos
+  function transient(op, r) {
+    if (r.status < 500) return false;
+    op.tries = (op.tries || 0) + 1;
+    if (op.tries <= 10) throw new Error("server " + r.status);
+    return true; // demasiados intentos: soltar para no envenenar la cola
+  }
+
   async function run(op) {
     const hdr = { "Content-Type": "application/json", "x-device-id": deviceId };
 
@@ -164,6 +172,7 @@
       if (r.status === 401) return "auth";
       if (r.ok) { const j = await r.json(); idMap[op.lid] = j.flightId; lsSet(MKEY, idMap); return true; }
       if (r.status === 409) { const j = await r.json(); if (j.flight) { idMap[op.lid] = j.flight.id; lsSet(MKEY, idMap); } return true; }
+      if (transient(op, r)) return true;
       return true; // 4xx definitivo: no bloquear la cola
     }
 
@@ -172,6 +181,7 @@
       if (!sid) { op.tries = (op.tries || 0) + 1; return op.tries > 8 ? true : "wait"; }
       const r = await fetch(API + "/flight/" + sid + "/check", { method: "POST", headers: hdr, body: JSON.stringify({ phase: op.phase, item: op.item, checked: op.checked }) });
       if (r.status === 401) return "auth";
+      if (transient(op, r)) return true;
       return true; // idempotente; 404 u otros: no bloquear
     }
 
@@ -192,6 +202,7 @@
       });
       if (r.status === 401) return "auth";
       if (r.ok || r.status === 400) { closedDone[op.lid] = 1; lsSet(CKEY, closedDone); return true; }
+      if (transient(op, r)) return true;
       return true;
     }
 

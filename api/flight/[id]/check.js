@@ -1,6 +1,6 @@
-const { query } = require('../../../_lib/db');
-const { ok, badRequest, notFound, serverError } = require('../../../_lib/response');
-const { requireSession } = require('../../../_lib/middleware');
+const { query } = require('../../_lib/db');
+const { ok, badRequest, notFound, serverError } = require('../../_lib/response');
+const { requireSession } = require('../../_lib/middleware');
 
 async function handleCheck(req, res) {
   if (req.method !== 'POST') {

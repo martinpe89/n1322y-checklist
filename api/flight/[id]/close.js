@@ -1,7 +1,7 @@
-const { query } = require('../../../_lib/db');
-const { ok, badRequest, notFound, serverError } = require('../../../_lib/response');
-const { requireSession } = require('../../../_lib/middleware');
-const { verifyPin } = require('../../../_lib/auth');
+const { query } = require('../../_lib/db');
+const { ok, badRequest, notFound, serverError } = require('../../_lib/response');
+const { requireSession } = require('../../_lib/middleware');
+const { verifyPin } = require('../../_lib/auth');
 
 async function handleClose(req, res) {
   if (req.method !== 'POST') {
