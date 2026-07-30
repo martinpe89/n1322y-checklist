@@ -142,6 +142,11 @@ button{font-family:inherit;color:inherit;background:none;border:0;cursor:pointer
 /* ---------- home ---------- */
 .wrap{padding:16px}
 .hero{padding:34px 16px 26px}
+.planeArt{display:block;width:100%;max-width:520px;margin:22px auto 0;opacity:.92}
+@media (prefers-reduced-motion:no-preference){
+  .planeArt{animation:planeIn .5s ease-out}
+  @keyframes planeIn{from{opacity:0;transform:translateX(10px)}to{opacity:.92;transform:none}}
+}
 .hero .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.24em;color:var(--magenta);margin-bottom:16px}
 .hero h1{margin:0;font-size:40px;line-height:.98;letter-spacing:-.03em;font-weight:800}
 .hero h1 em{display:block;font-style:normal;font-size:15px;font-weight:500;color:var(--dim);
@@ -534,12 +539,47 @@ function elapsed(){
 }
 
 /* ---------- home ---------- */
+/* Ilustración técnica de la T182T (line-art, no fotográfica) — decorativa */
+const PLANE_ART=`<svg class="planeArt" viewBox="0 0 640 290" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <defs><linearGradient id="pfade" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#39B7F0" stop-opacity=".95"/>
+    <stop offset="1" stop-color="#39B7F0" stop-opacity=".5"/></linearGradient></defs>
+  <g fill="none" stroke="url(#pfade)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M86 128 C82 148 82 178 86 198" stroke-width="2.4"/>
+    <path d="M92 163 C92 158 96 155 100 155 C104 155 106 158 106 163 C106 168 104 171 100 171 C96 171 92 168 92 163 Z" stroke-width="2"/>
+    <path d="M106 158 C120 150 142 146 166 145"/>
+    <path d="M166 145 C186 122 204 112 228 108"/>
+    <path d="M330 108 C346 122 360 130 378 134"/>
+    <path d="M378 134 C420 140 452 142 476 142"/>
+    <path d="M446 141 C462 118 476 92 486 72 C489 66 494 62 500 62 L534 62 C541 62 544 67 542 73 L522 146"/>
+    <path d="M528 70 L512 144" stroke-opacity=".45" stroke-width="1.3"/>
+    <path d="M480 148 L596 143 C602 143 602 151 596 152 L486 158"/>
+    <path d="M522 146 C518 152 512 156 504 158"/>
+    <path d="M106 176 C120 184 150 190 190 193 L330 196 C390 196 450 188 504 158"/>
+    <path d="M106 158 L106 176" stroke-opacity=".8"/>
+    <path d="M196 108 C202 100 212 96 224 95 L400 90 C408 90 410 96 404 99 L338 106 L228 110 Z" stroke-width="2"/>
+    <path d="M208 178 L258 110" stroke-width="2.4"/>
+    <path d="M208 178 L252 112" stroke-opacity=".4" stroke-width="1.2"/>
+    <path d="M238 110 L242 150 M300 108 L302 148" stroke-opacity=".45" stroke-width="1.3"/>
+    <path d="M242 150 L302 148" stroke-opacity=".45" stroke-width="1.3"/>
+    <path d="M152 192 L160 226" stroke-width="2.2"/>
+    <circle cx="162" cy="238" r="11" stroke-width="2"/>
+    <path d="M148 232 C150 226 156 222 163 222 L176 226" stroke-opacity=".8" stroke-width="1.8"/>
+    <path d="M320 196 C330 208 340 220 348 228" stroke-width="2.4"/>
+    <circle cx="352" cy="240" r="13" stroke-width="2"/>
+    <path d="M336 234 C338 226 346 221 354 222 L370 228" stroke-opacity=".8" stroke-width="1.8"/>
+    <path d="M70 262 L600 262" stroke-opacity=".2" stroke-width="1.4" stroke-dasharray="2 9"/>
+    <path d="M224 76 L400 76 M224 71 L224 81 M400 71 L400 81" stroke-opacity=".26" stroke-width="1"/>
+  </g>
+  <text x="312" y="66" fill="#4A5560" font-family="ui-monospace,Menlo,monospace" font-size="10" letter-spacing="2" text-anchor="middle">T182T &#183; NAV III</text>
+</svg>`;
 function vHome(){
   const act=cfg.partners.filter(p=>!p.archived);
   app.innerHTML=`
   <div class="hero">
     <div class="k">Cessna &middot; Normal Procedures</div>
     <h1>N1322Y<em>Cessna T182T NAV III &middot; GFC 700 AFCS</em></h1>
+    ${PLANE_ART}
     <p>Tap every line. Each checklist tells you when it is complete. Tachometer hours are captured at
        start and shutdown, so every partner's share of maintenance is on record.</p>
   </div>
