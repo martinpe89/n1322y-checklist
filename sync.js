@@ -124,9 +124,9 @@
   /* ---------- código de acceso -------------------------------------------- */
   function askCode() {
     const el = sheet(
-      '<div class="k">Sincronización · N1322Y</div>' +
+      '<div class="k">Enlace de datos · N1322Y</div>' +
       "<h3>Código de acceso</h3>" +
-      "<p>Respalda los vuelos en el servidor. La app funciona igual sin él; los datos quedan en este dispositivo.</p>" +
+      "<p>Respalda los vuelos en el servidor. Sin código, la app opera igual en modo local — los datos quedan en este dispositivo.</p>" +
       '<input id="syCode" class="syncIn code" type="password" autocomplete="off" placeholder="Código compartido">' +
       '<div id="syErr" class="err">Código incorrecto</div>' +
       '<div class="syncRow"><button id="syLater">Luego</button><button id="syGo" class="go">Conectar</button></div>'
@@ -154,8 +154,8 @@
     const el = sheet(
       '<div class="k">Primer ingreso</div>' +
       "<h3>" + sp.name + "</h3>" +
-      "<p>Registra tu clave de 4 dígitos. Es tu firma: se pide una sola vez por vuelo, al cerrarlo. No uses una clave de banco o correo.</p>" +
-      '<span class="syncLbl">Clave — 4 dígitos</span>' +
+      "<p>Clave de firma — 4 dígitos. Se exige una sola vez por vuelo, al cierre: el cierre queda firmado por quien voló. No reutilices claves de banco o correo.</p>" +
+      '<span class="syncLbl">Clave de firma — 4 dígitos</span>' +
       '<input id="syP1" class="syncIn" type="password" inputmode="numeric" autocomplete="off" maxlength="4">' +
       '<span class="syncLbl">Repítela</span>' +
       '<input id="syP2" class="syncIn" type="password" inputmode="numeric" autocomplete="off" maxlength="4">' +
@@ -200,7 +200,7 @@
     const el = sheet(
       '<div class="k">Firma del vuelo</div>' +
       "<h3>" + (op.pilot || "Piloto") + "</h3>" +
-      "<p>El cierre del vuelo genera el cobro de mantenimiento. Confírmalo con tu clave de 4 dígitos.</p>" +
+      "<p>El cierre genera el cobro de mantenimiento. Clave de firma — ingresar.</p>" +
       '<input id="syP" class="syncIn" type="password" inputmode="numeric" autocomplete="off" maxlength="4">' +
       '<div id="syErr" class="err"' + (op.pinError ? ' style="display:block"' : "") + ">" + (op.pinError || "") + "</div>" +
       '<div class="syncRow"><button id="syLater">Luego</button><button id="syGo" class="go">Firmar cierre</button></div>'

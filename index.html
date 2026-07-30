@@ -842,7 +842,7 @@ function capCard(it,done,ii){
   const shot=(k,img,cap)=>`<figure style="margin:0"><figcaption>${cap}</figcaption>
     <div class="shot" data-shoot="${it.id}.${k}" style="aspect-ratio:1/1;margin-bottom:0">${img
       ? `<img src="${img}" alt="">`
-      : `<span class="ph">${CAM}<div>Tomar foto</div></span>`}</div></figure>`;
+      : `<span class="ph">${CAM}<div>FOTOGRAFIAR</div></span>`}</div></figure>`;
   return `<div class="cap${done?" done":""}" id="cap-${it.id}">
     <button class="captop" data-cap="${ii}" data-id="${it.id}">
       <span class="box${done?" on":""}">${CHK}</span>
@@ -935,7 +935,7 @@ function composite(d){
 async function ocrFill(id,k,img){
   const key=k==="E"?"eng":"ac";
   const note=$("#ocr-"+id);
-  if(note)note.textContent="Leyendo la foto…";
+  if(note)note.textContent="LEYENDO INSTRUMENTO…";
   let v=null;
   try{v=await readTach(img,key)}catch(e){}
   const d=F.cap[id]=F.cap[id]||{};
@@ -944,15 +944,15 @@ async function ocrFill(id,k,img){
     /* entero leído, décima incierta: el piloto la completa (el ítem no se puede
        marcar hasta que lo haga) */
     if(inp&&!inp.value){inp.value=v.partial+"."}
-    if(note)note.textContent="Se leyó "+v.partial+" — completa la décima y verifica.";
+    if(note)note.textContent="SE LEYÓ "+v.partial+" — COMPLETAR DÉCIMA Y VERIFICAR";
   }else if(typeof v==="string"&&!d[key]){
     d[key]=v;
     if(inp){inp.value=v;inp.classList.add("ok")}
     if(capReady(id)){const h=$("#hint-"+id);if(h)h.classList.remove("on")}
     save();
-    if(note)note.textContent="Lectura automática — verifícala antes de marcar.";
+    if(note)note.textContent="LECTURA AUTOMÁTICA — VERIFICAR ANTES DE MARCAR";
   }else if(v==null){
-    if(note)note.textContent=d[key]?"":"No se pudo leer la foto — escribe la lectura.";
+    if(note)note.textContent=d[key]?"":"SIN LECTURA — INGRESO MANUAL";
   }else if(note)note.textContent="";
 }
 function wire(pi){
