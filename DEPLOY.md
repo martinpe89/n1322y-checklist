@@ -1,91 +1,50 @@
-# Deploy a Vercel
+# Deploy — checklist.deep.com.co
 
-## Requisitos previos
+Lista de chequeo de despliegue. El proyecto **n1322y-checklist** ya existe en Vercel (equipo *Martin's projects*), con dominio **checklist.deep.com.co** apuntado.
 
-- CLI de Vercel instalada: `npm i -g vercel`
-- Tener sessión activa: `vercel login`
+## Prevuelo
 
-## Pasos
+- CLI de Vercel: `npm i -g vercel` y `vercel login`
+- Integraciones activas en el proyecto (Vercel → Storage):
+  - **Neon Postgres** → inyecta `DATABASE_URL` automáticamente
+  - **Vercel Blob** → inyecta `BLOB_READ_WRITE_TOKEN` automáticamente
+- Variables manuales en Settings → Environment Variables:
+  - `ACCESS_CODE` — código compartido de los socios
+  - `SESSION_SECRET` — firma HMAC de las sesiones
+- **Ningún secreto en el repo.** `.env.example` solo lleva placeholders.
 
-### 1. Descargar y descomprimir
+## Rodaje y despegue
 
 ```bash
-# Si descargaste el tar.gz:
-tar -xzf n1322y-checklist.tar.gz
 cd n1322y-checklist
-```
-
-O copia los archivos directamente a `/Users/martinpelaez/Downloads/n1322y-checklist`
-
-### 2. Instalar dependencias
-
-```bash
-npm install
-```
-
-### 3. Deployar
-
-```bash
+npm install          # solo instala pg
 vercel deploy --prod
 ```
 
-Cuando Vercel pregunte:
+Al estar el proyecto vinculado, el CLI despliega directo. `vercel.json` aplica `cleanUrls` y el rewrite `/api/export.csv → /api/export`; el directorio `api/` se detecta solo.
 
-```
-? Set up and deploy "~/path/to/n1322y-checklist"? [Y/n] 
-```
+## Primera puesta en marcha (una sola vez)
 
-Responde `y`. Luego:
+Con Neon conectado, inicializar el schema y sembrar los socios:
 
-```
-? Which scope should we deploy to? 
-```
-
-Selecciona: **Martin's projects** (team_xmvITYGfbnMsp1Y78E5McLtC)
-
-```
-? Link to existing project? [y/N]
+```bash
+curl -X POST https://checklist.deep.com.co/api/migrate \
+  -H "Content-Type: application/json" \
+  -d '{"code":"<ACCESS_CODE>"}'
 ```
 
-Responde `n` para crear uno nuevo.
+Ejecuta `schema.sql` (idempotente: `create table if not exists`) y crea los socios iniciales.
 
-```
-? What's your project's name?
-```
+## Chequeo post-despegue
 
-Escribe: `n1322y-checklist`
+1. **Sistemas:** `curl https://checklist.deep.com.co/api/health` — las cuatro variables deben reportar `true`.
+2. **Enlace de datos:** abrir la app, ingresar el código en la hoja "Conectar" y verificar que el pill de sync desaparece (cola vacía).
+3. **Circuito completo:** abrir un vuelo de prueba, marcar ítems, fotografiar los dos tacómetros (el OCR autollena; verificar la lectura), cerrar con PIN y confirmar el vuelo en `GET /api/report?partner=<id>` y en `/api/export.csv`.
+4. **Modo offline:** en modo avión, marcar ítems y confirmar el pill `OFFLINE · n`; al volver la señal debe vaciar la cola en orden.
 
-```
-? In which directory is your code? [./]
-```
+## Anomalías
 
-Presiona Enter (default es ./). El CLI detectará automáticamente `/api`.
-
-### 4. Esperar y confirmar
-
-Vercel creará el proyecto y hará el build. Debería pasar sin errores, aunque los endpoints fallen si falta DATABASE_URL (es normal por ahora).
-
-**Copia la URL** que Vercel te devuelve. Será algo como:
-```
-https://n1322y-checklist.vercel.app
-```
-
----
-
-## ¿Qué pasa si el build falla?
-
-Verifica:
-- ✅ `node_modules` instalado (`npm install`)
-- ✅ Node.js v16 o superior (`node --version`)
-- ✅ Ningún archivo `.env` en el repo
-
-Si hay error sobre `DATABASE_URL`, es esperado en este punto—una vez que Neon esté conectado desaparecerá.
-
----
-
-## Próximo paso
-
-Cuando la URL esté lista y el build haya pasado, avísame:
-- URL del proyecto (ej: https://n1322y-checklist.vercel.app)
-
-Yo conectaré Neon y Blob, agrego ACCESS_CODE y SESSION_SECRET, y confirmo "listo".
+- **Error de `DATABASE_URL`:** la integración Neon no está conectada al proyecto, o el deploy corrió antes de conectarla. Reconectar y redesplegar.
+- **401 en toda la API:** `ACCESS_CODE` o `SESSION_SECRET` faltan o cambiaron (los tokens vigentes quedan inválidos al rotar el secret).
+- **Fotos que no suben:** revisar que la integración Blob esté activa; el cliente sube directo a `blob.vercel-storage.com` con el grant de `/api/upload`.
+- **Rotación de secretos:** cambiar el valor en Vercel y redesplegar. Nunca escribirlos en archivos del repo.

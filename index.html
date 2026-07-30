@@ -525,9 +525,9 @@ function money(h){
 
 function go(v){
   view=v;
-  $("#strip").classList.toggle("hide",v==="home");
+  $("#strip").classList.toggle("hide",v==="home"||v==="done");
   window.scrollTo(0,0);
-  ({home:vHome,run:vRun,sum:vSum,log:vLog,part:vPart,rep:vRep})[v]();
+  ({home:vHome,run:vRun,sum:vSum,log:vLog,part:vPart,rep:vRep,done:vDone})[v]();
   if(F){$("#sWho").textContent=F.pilot||"";$("#sTail").textContent=TAIL}
   else $("#sWho").textContent="";
   clearInterval(tick);
@@ -1068,10 +1068,42 @@ function vSum(){
     LOG.unshift({id:F.id,pid:F.pid,pilot:F.pilot,tail:F.tail,date:F.t0,
       engS:num(s.eng),engE:num(e.eng),acS:num(s.ac),acE:num(e.ac),
       engH:dE,acH:dA,missing:missing.length});
+    doneInfo={pilot:F.pilot,engH:dE,acH:dA,date:F.t0,clean:!missing.length};
     await S.set(K.idx,LOG.slice(0,200));
     await S.set(K.one(F.id),{start:s,end:e});
-    await S.del(K.act); F=null; go("log");
+    await S.del(K.act); F=null; go("done");
   };
+}
+
+/* ---------- vuelo cerrado: página de cierre ---------- */
+let doneInfo=null;
+function vDone(){
+  const d=doneInfo||{};
+  app.innerHTML=`
+  <div class="hero" style="text-align:center;padding-top:56px">
+    <div class="k" style="color:var(--green)">VUELO CERRADO &middot; ${TAIL}</div>
+    ${PLANE_ART}
+    <h1 style="font-size:30px;margin-top:26px">Despegar es opcional.<em style="font-size:24px;color:var(--fg);letter-spacing:-.02em;text-transform:none;font-family:var(--sans);font-weight:700;margin-top:6px">Volver a casa, jam&aacute;s.</em></h1>
+    <p style="max-width:30em;margin:22px auto 0">
+      Cada &iacute;tem que marcaste hoy es una promesa cumplida con los que te esperan en tierra.
+      Gracias por volar con disciplina${d.pilot?`, ${esc(d.pilot.split(" ")[0])}`:""}.</p>
+  </div>
+  <div class="wrap" style="max-width:520px;margin:0 auto">
+    <div class="big">
+      <div class="stat"><span class="lbl">Horas de motor</span>
+        <div class="v g">${d.engH!=null?d.engH.toFixed(1):"—"}</div>
+        <div class="sub">${d.date?new Date(d.date).toLocaleDateString():""}</div></div>
+      <div class="stat"><span class="lbl">Checklists</span>
+        <div class="v ${d.clean?"g":""}">${d.clean?"100%":"PARCIAL"}</div>
+        <div class="sub">${d.clean?"todo verificado":"con &iacute;tems sin marcar"}</div></div>
+    </div>
+    <p style="color:var(--dimmer);font-size:11.5px;text-align:center;line-height:1.6;margin:18px 2px 8px">
+      El avi&oacute;n queda listo para el pr&oacute;ximo que conf&iacute;e en &eacute;l. Buenos vientos.</p>
+  </div>`;
+  keys.className="keys";
+  keys.innerHTML=`<button class="k2 go" id="kDoneOk">Continuar al logbook</button>`;
+  $("#kDoneOk").onclick=()=>go("log");
+  beep(1);
 }
 
 /* ---------- logbook ---------- */
