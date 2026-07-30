@@ -1,0 +1,1043 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#07090C">
+<title>T182T Checklist</title>
+<style>
+:root{
+  --bg:#07090C; --panel:#10141A; --panel2:#171E27; --line:#242D39;
+  --fg:#E6EDF5; --dim:#77848F; --dimmer:#4A5560;
+  --cyan:#39B7F0; --green:#2FD07B; --amber:#FFB020; --magenta:#E255A6; --red:#FF5A52;
+  --mono:ui-monospace,"SF Mono","Roboto Mono",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;
+  --key:64px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--fg);font-family:var(--sans);
+  -webkit-text-size-adjust:100%;overscroll-behavior-y:contain}
+body{padding-bottom:calc(var(--key) + env(safe-area-inset-bottom) + 8px)}
+button{font-family:inherit;color:inherit;background:none;border:0;cursor:pointer}
+.lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+
+/* ---------- top strip ---------- */
+.strip{position:sticky;top:0;z-index:30;background:rgba(7,9,12,.94);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line);padding:calc(env(safe-area-inset-top) + 9px) 14px 9px;
+  display:flex;align-items:center;gap:10px}
+.strip .tail{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;color:var(--dim)}
+.strip .who{margin-left:auto;font-family:var(--mono);font-size:11.5px;color:var(--cyan);
+  letter-spacing:.06em;max-width:44%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.strip .et{font-family:var(--mono);font-size:11.5px;color:var(--dim);font-variant-numeric:tabular-nums}
+.dots{width:34px;height:34px;border:1px solid var(--line);border-radius:8px;font-size:15px;
+  color:var(--dim);display:grid;place-items:center;flex:none}
+
+/* ---------- phase head ---------- */
+.head{padding:18px 16px 12px}
+.head .meta{display:flex;align-items:baseline;gap:10px;margin-bottom:7px}
+.head .idx{font-family:var(--mono);font-size:13px;color:var(--magenta);letter-spacing:.1em;
+  font-variant-numeric:tabular-nums}
+.head h1{margin:0;font-size:22px;line-height:1.15;letter-spacing:-.015em;font-weight:700}
+.head h1 small{display:block;font-size:12.5px;font-weight:500;color:var(--dim);letter-spacing:.06em;
+  margin-top:5px;font-family:var(--mono);text-transform:uppercase}
+
+/* segmented annunciator strip */
+:focus-visible{outline:2px solid var(--cyan);outline-offset:2px;border-radius:8px}
+.seg{display:flex;gap:1.5px;margin:14px 16px 4px;height:5px}
+.seg i{flex:1;background:var(--line);border-radius:1px;transition:background .18s}
+.seg i.on{background:var(--green)}
+.seg i.sk{background:var(--amber)}
+.count{margin:9px 16px 0;display:flex;justify-content:space-between;align-items:center}
+.count b{font-family:var(--mono);font-size:12px;font-variant-numeric:tabular-nums;letter-spacing:.08em;color:var(--fg)}
+
+/* ---------- items ---------- */
+.list{padding:14px 12px 24px}
+.row{display:flex;gap:13px;align-items:flex-start;width:100%;text-align:left;
+  min-height:62px;padding:14px 14px;border:1px solid var(--line);border-radius:11px;
+  background:var(--panel);margin-bottom:8px;transition:background .14s,border-color .14s}
+.row:active{background:var(--panel2)}
+.row.sub{margin-left:26px}
+.box{flex:none;width:26px;height:26px;border:1.5px solid var(--dimmer);border-radius:6px;
+  display:grid;place-items:center;margin-top:1px;transition:.16s;background:none}
+.box svg{width:15px;height:15px;opacity:0;transform:scale(.5);transition:.16s;stroke:#06210F}
+.box.on{border-color:var(--green);background:var(--green)}
+.box.on svg{opacity:1;transform:scale(1)}
+.tx{flex:1;min-width:0;display:block}
+.ob{display:block;font-size:16px;line-height:1.3;font-weight:600}
+.ac{display:block;font-family:var(--mono);font-size:13.5px;letter-spacing:.05em;color:var(--cyan);
+  text-transform:uppercase;margin-top:3px;line-height:1.35;word-break:break-word}
+.nt{display:block;font-size:12.5px;color:var(--dim);margin-top:5px;line-height:1.4}
+.sl{display:block;font-family:var(--mono);font-size:11px;color:var(--dimmer);margin-top:2px}
+
+.row.done,.cap.done{border-color:rgba(47,208,123,.42);background:rgba(47,208,123,.07)}
+.row.done .ob,.cap.done .ob{color:#A9E9C6}
+.row.done .ac{color:var(--green)}
+
+.row.crit{border-color:rgba(255,176,32,.5);background:rgba(255,176,32,.07)}
+.row.crit .ac{color:var(--amber)}
+.row.crit .box{border-color:var(--amber)}
+.row.crit.done{border-color:rgba(47,208,123,.42);background:rgba(47,208,123,.07)}
+.row.crit.done .ac{color:var(--green)}
+.captop{display:flex;gap:13px;align-items:flex-start;width:100%;text-align:left;
+  padding:0;margin-bottom:12px;background:none}
+.hint{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:var(--amber);
+  text-transform:uppercase;margin-top:10px;display:none}
+.hint.on{display:block}
+.tag{display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;
+  padding:2px 6px;border-radius:4px;margin-bottom:6px;text-transform:uppercase}
+.tag.a{background:rgba(255,176,32,.16);color:var(--amber)}
+.tag.c{background:rgba(57,183,240,.14);color:var(--cyan)}
+
+.note{margin:2px 2px 10px;padding:11px 13px;border-left:2px solid var(--amber);
+  background:rgba(255,176,32,.055);border-radius:0 8px 8px 0}
+.note .lbl{color:var(--amber);margin-bottom:4px;display:block}
+.note p{margin:0;font-size:13px;color:#C9BFA8;line-height:1.45}
+
+/* photo / hours card */
+.cap{border:1px solid var(--line);border-radius:11px;background:var(--panel);
+  padding:14px;margin-bottom:8px}
+.shot{width:100%;aspect-ratio:4/3;border:1px dashed var(--dimmer);border-radius:9px;
+  display:grid;place-items:center;background:#0A0D11;overflow:hidden;margin-bottom:12px}
+.shot img{width:100%;height:100%;object-fit:cover;display:block}
+.shot .ph{text-align:center;padding:16px}
+.shot .ph svg{width:30px;height:30px;stroke:var(--cyan);margin-bottom:8px}
+.shot .ph div{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--dim)}
+.retake{width:100%;height:42px;border:1px solid var(--line);border-radius:8px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--dim);
+  text-transform:uppercase;margin-bottom:12px}
+.hrs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fld label{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;
+  color:var(--dim);text-transform:uppercase;margin-bottom:6px}
+.fld input{width:100%;height:54px;background:#0A0D11;border:1px solid var(--line);
+  border-radius:9px;color:var(--fg);font-family:var(--mono);font-size:22px;text-align:center;
+  font-variant-numeric:tabular-nums;padding:0 6px}
+.fld input:focus{outline:none;border-color:var(--cyan)}
+.fld input.ok{border-color:rgba(47,208,123,.5);color:var(--green)}
+
+/* annunciator */
+.ann{margin:4px 12px 0;padding:15px;border:1px solid var(--green);border-radius:11px;
+  background:rgba(47,208,123,.13);text-align:center}
+.ann b{display:block;font-family:var(--mono);font-size:14px;letter-spacing:.2em;color:var(--green)}
+.ann span{display:block;font-size:12.5px;color:#8FCFAC;margin-top:6px}
+.ann.warn{border-color:var(--amber);background:rgba(255,176,32,.12)}
+.ann.warn b{color:var(--amber)} .ann.warn span{color:#C9AF7E}
+@media (prefers-reduced-motion:no-preference){
+  .ann{animation:lite .3s ease-out}
+  @keyframes lite{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+}
+
+/* ---------- softkeys ---------- */
+.keys{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;gap:1px;
+  background:var(--line);border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom)}
+.keys button{flex:1;height:var(--key);background:var(--panel2);font-family:var(--mono);
+  font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.keys button:disabled{color:var(--dimmer)}
+.keys button.k2{flex:1.6}
+.keys button.go{background:rgba(47,208,123,.16);color:var(--green)}
+.keys button.go:disabled{background:var(--panel2);color:var(--dimmer)}
+.keys button small{font-size:9px;letter-spacing:.1em;color:var(--dim);text-transform:uppercase}
+.keys button:active{background:#1F2833}
+
+/* ---------- home ---------- */
+.wrap{padding:16px}
+.hero{padding:34px 16px 26px}
+.hero .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.24em;color:var(--magenta);margin-bottom:16px}
+.hero h1{margin:0;font-size:40px;line-height:.98;letter-spacing:-.03em;font-weight:800}
+.hero h1 em{display:block;font-style:normal;font-size:15px;font-weight:500;color:var(--dim);
+  letter-spacing:.16em;font-family:var(--mono);margin-top:10px}
+.hero p{margin:20px 0 0;font-size:14.5px;color:var(--dim);line-height:1.5;max-width:34em}
+.card{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:16px;margin-bottom:12px}
+.card h2{margin:0 0 14px;font-size:13px;font-family:var(--mono);letter-spacing:.14em;
+  text-transform:uppercase;color:var(--dim);font-weight:600}
+.tin{width:100%;height:54px;background:#0A0D11;border:1px solid var(--line);border-radius:9px;
+  color:var(--fg);font-size:16px;padding:0 14px;font-family:var(--sans)}
+.tin:focus{outline:none;border-color:var(--cyan)}
+.pick{display:flex;align-items:center;gap:13px;background:var(--panel);padding:13px 15px;width:100%;text-align:left}
+.pick .av{flex:none;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);
+  display:grid;place-items:center;font-family:var(--mono);font-size:13px;letter-spacing:.04em;color:var(--dim)}
+.pick .p{flex:1;min-width:0;font-size:15.5px;overflow:hidden}
+.pick .h{font-family:var(--mono);font-size:14px;color:var(--dim);font-variant-numeric:tabular-nums;flex:none}
+.pick .sub2{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;
+  color:var(--dimmer);text-transform:uppercase;margin-top:4px}
+.pick .s{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;color:var(--dimmer)}
+.pick.sel{background:var(--panel2)}
+.pick.sel .av{border-color:var(--cyan);color:var(--cyan);background:rgba(57,183,240,.1)}
+.pick.sel .h{color:var(--cyan)}
+.pick:active{background:var(--panel2)}
+.idxlist{display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line);
+  border-radius:12px;overflow:hidden}
+.ph{display:flex;align-items:center;gap:12px;background:var(--panel);padding:14px 15px;width:100%;text-align:left}
+.ph .n{font-family:var(--mono);font-size:11.5px;color:var(--dimmer);width:20px;flex:none;font-variant-numeric:tabular-nums}
+.ph .t{flex:1;font-size:14.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ph .s{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--dimmer)}
+.ph.ok .s{color:var(--green)} .ph.ok .n{color:var(--green)}
+.ph.now{background:var(--panel2)} .ph.now .n{color:var(--magenta)} .ph.now .s{color:var(--magenta)}
+.grp{background:#0A0D11;padding:9px 15px;font-family:var(--mono);font-size:9.5px;
+  letter-spacing:.18em;color:var(--dimmer);text-transform:uppercase}
+
+/* ---------- summary / log ---------- */
+.big{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.stat{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:15px}
+.stat .lbl{display:block;margin-bottom:9px}
+.stat .v{font-family:var(--mono);font-size:30px;font-weight:600;font-variant-numeric:tabular-nums;
+  letter-spacing:-.02em;line-height:1}
+.stat .v.g{color:var(--green)}
+.stat .sub{font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:8px;font-variant-numeric:tabular-nums}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pair figure{margin:0}
+.pair figcaption{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;color:var(--dim);
+  text-transform:uppercase;margin-bottom:7px}
+.pair img{width:100%;border:1px solid var(--line);border-radius:9px;display:block;aspect-ratio:4/3;object-fit:cover}
+.miss{font-size:13px;color:var(--amber);line-height:1.5;margin:0;padding-left:18px}
+.miss li{margin-bottom:5px}
+.lg{display:flex;align-items:center;gap:12px;background:var(--panel);padding:14px 15px;width:100%;text-align:left}
+.lg .d{font-family:var(--mono);font-size:11px;color:var(--dim);width:62px;flex:none}
+.lg .p{flex:1;font-size:14.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lg .h{font-family:var(--mono);font-size:15px;color:var(--green);font-variant-numeric:tabular-nums}
+.tot{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.tot:last-child{border:0}
+.tot span{font-size:15px}
+.tot b{font-family:var(--mono);font-size:17px;color:var(--green);font-variant-numeric:tabular-nums}
+.empty{text-align:center;padding:44px 20px;color:var(--dim);font-size:14px;line-height:1.55}
+
+/* sheet */
+.sheet{position:fixed;inset:0;z-index:60;background:rgba(3,5,7,.72);display:none;align-items:flex-end}
+.sheet.on{display:flex}
+.sheet .in{background:var(--panel2);width:100%;border-radius:16px 16px 0 0;padding:8px 0 calc(env(safe-area-inset-bottom) + 8px);
+  border-top:1px solid var(--line)}
+.sheet button{display:block;width:100%;padding:17px 20px;text-align:left;font-size:15.5px;border-bottom:1px solid var(--line)}
+.sheet button:last-child{border:0;color:var(--dim);text-align:center;font-family:var(--mono);
+  font-size:12px;letter-spacing:.14em;text-transform:uppercase}
+.sheet button.dg{color:var(--red)}
+.hide{display:none!important}
+.lens{position:fixed;inset:0;z-index:70;background:#000;display:none;place-items:center}
+.lens.on{display:grid}
+.lens img{max-width:100%;max-height:100%}
+</style>
+
+<div id="strip" class="strip hide">
+  <span class="tail" id="sTail">N1322Y</span>
+  <span class="et" id="sEt"></span>
+  <span class="who" id="sWho"></span>
+  <button class="dots" id="sMenu" aria-label="Menu">&#8942;</button>
+</div>
+
+<main id="app"></main>
+<div class="keys hide" id="keys"></div>
+
+<div class="sheet" id="sheet"><div class="in" id="sheetIn"></div></div>
+<div class="lens" id="lens"><img id="lensImg" alt=""></div>
+
+<script>
+/* =========================================================================
+   T182T NAV III — Checklist
+   Items transcribed verbatim from the POH, Section 4 Normal Procedures.
+   Only the highlighted items are included.
+   Items marked CUSTOM / PHOTO are operator additions, not POH items.
+   ---- To edit any wording, this is the only block you need to touch. ----
+   o = object   a = action   n = note   type: sub | note | photo   crit: amber
+   ========================================================================= */
+const PHASES = [
+{ g:"GROUND", t:"Preflight Inspection", s:"Cabin", items:[
+  {o:"Pitot Tube Cover",a:"REMOVE",n:"Check for pitot blockage."},
+  {o:"Pilot's Operating Handbook",a:"ACCESSIBLE TO PILOT"},
+  {o:"Garmin G1000 Cockpit Reference Guide",a:"ACCESSIBLE TO PILOT"},
+  {o:"Airplane Weight and Balance",a:"CHECKED"},
+  {o:"Parking Brake",a:"SET"},
+  {o:"Control Wheel Lock",a:"REMOVE"},
+  {o:"Parachute Safety Pin",a:"REMOVE",crit:1,tag:"Added"},
+  {o:"MAGNETOS Switch",a:"OFF"},
+  {o:"AVIONICS Switch (BUS 1 and BUS 2)",a:"OFF"},
+  {o:"MASTER Switch (ALT and BAT)",a:"ON"},
+  {o:"Primary Flight Display (PFD)",a:"CHECK",n:"Verify PFD is ON."},
+  {o:"FUEL QTY (L and R)",a:"CHECK"},
+  {o:"LOW FUEL L and LOW FUEL R Annunciators",a:"CHECK",n:"Verify annunciators are not shown on PFD."},
+  {o:"OIL PRESSURE Annunciator",a:"CHECK",n:"Verify annunciator is shown."},
+  {o:"LOW VACUUM Annunciator",a:"CHECK",n:"Verify annunciator is shown."},
+  {o:"AVIONICS Switch (BUS 1)",a:"ON"},
+  {o:"Forward Avionics Fan",a:"CHECK",n:"Verify fan is heard."},
+  {o:"AVIONICS Switch (BUS 1)",a:"OFF"},
+  {o:"AVIONICS Switch (BUS 2)",a:"ON"},
+  {o:"Aft Avionics Fan",a:"CHECK",n:"Verify fan is heard."},
+  {o:"AVIONICS Switch (BUS 2)",a:"OFF"},
+  {o:"PITOT HEAT Switch",a:"ON",n:"Carefully check that pitot tube is warm to the touch within 30 seconds."},
+  {o:"PITOT HEAT Switch",a:"OFF"},
+  {o:"Stall Warning System",a:"CHECK",n:"Gently move the stall vane upward and verify that the stall warning horn is heard."},
+  {o:"LOW VOLTS Annunciator",a:"CHECK",n:"Verify annunciator is shown."},
+  {o:"Oxygen Supply Pressure",a:"CHECK"},
+  {o:"Oxygen Masks",a:"CHECK"},
+  {o:"Fire Extinguisher",a:"CHECK",n:"Verify gage pointer in green arc."},
+  {type:"photo",id:"start",o:"Tachometer",a:"PHOTOGRAPH AND LOG",
+   n:"Engine and aircraft hours before the flight. Used to compute your maintenance share.",tag:"Added"}
+]},
+{ g:"GROUND", t:"Before Starting Engine", items:[
+  {o:"Preflight Inspection",a:"COMPLETE"},
+  {o:"Passenger Briefing",a:"COMPLETE"},
+  {o:"Seats and Seat Belts",a:"ADJUST and LOCK",n:"Verify inertia reel locking."},
+  {o:"Brakes",a:"TEST and SET"},
+  {o:"Circuit Breakers",a:"CHECK IN"},
+  {o:"Electrical Equipment",a:"OFF"},
+  {o:"AVIONICS Switch (BUS 1 and BUS 2)",a:"OFF"},
+  {o:"Cowl Flaps",a:"OPEN"},
+  {o:"FUEL SELECTOR Valve",a:"BOTH"}
+]},
+{ g:"GROUND", t:"Starting Engine", s:"With Battery", items:[
+  {o:"Throttle Control",a:"OPEN 1/4 INCH"},
+  {o:"Propeller Control",a:"HIGH RPM",n:"Push full in."},
+  {o:"Mixture Control",a:"IDLE CUTOFF",n:"Pull full out."},
+  {o:"STBY BATT Switch",a:"TEST",sl:"a",n:"Hold for 20 seconds, verify that green TEST lamp does not go off."},
+  {o:"STBY BATT Switch",a:"ARM",sl:"b",type:"sub",n:"Verify that PFD comes on."},
+  {o:"Engine Indicating System",a:"CHECK PARAMETERS",n:"Verify no red X's through ENGINE page indicators."},
+  {o:"BUS E Volts",a:"CHECK",n:"Verify 24 VOLTS minimum shown."},
+  {o:"M BUS Volts",a:"CHECK",n:"Verify 1.5 VOLTS or less shown."},
+  {o:"BATT S Amps",a:"CHECK",n:"Verify discharge shown (negative)."},
+  {o:"STBY BATT Annunciator",a:"CHECK",n:"Verify annunciator is shown."},
+  {o:"Propeller Area",a:"CLEAR",n:"Verify that all people and equipment are at a safe distance from the propeller."},
+  {o:"MASTER Switch (ALT and BAT)",a:"ON"},
+  {o:"BEACON Light Switch",a:"ON"},
+  {type:"note",n:"If engine is warm, omit the priming steps below (FUEL PUMP ON / Mixture / FUEL PUMP OFF)."},
+  {o:"FUEL PUMP Switch",a:"ON"},
+  {o:"Mixture Control",a:"SET to FULL RICH",n:"Full forward, until stable fuel flow is indicated (approximately 3 to 5 seconds), then set to IDLE CUTOFF (full aft) position."},
+  {o:"FUEL PUMP Switch",a:"OFF"},
+  {o:"MAGNETOS Switch",a:"START",n:"Release when engine starts."},
+  {o:"Mixture Control",a:"ADVANCE SMOOTHLY TO RICH",n:"When engine starts."},
+  {o:"Oil Pressure",a:"CHECK",n:"Verify that oil pressure increases into the GREEN BAND range in 30 to 60 seconds."},
+  {o:"AMPS (M BATT and BATT S)",a:"CHECK",n:"Verify charge shown (positive)."},
+  {o:"LOW VOLTS Annunciator",a:"CHECK",n:"Verify annunciator is not shown."},
+  {o:"NAV Light Switch",a:"ON as required"},
+  {o:"AVIONICS Switch (BUS 1 and BUS 2)",a:"ON"}
+]},
+{ g:"GROUND", t:"Before Takeoff", items:[
+  {o:"Parking Brake",a:"SET"},
+  {o:"Pilot and Passenger Seat Backs",a:"MOST UPRIGHT POSITION"},
+  {o:"Seats and Seat Belts",a:"CHECK SECURE"},
+  {o:"Cabin Doors",a:"CLOSED and LOCKED"},
+  {o:"Flight Controls",a:"FREE and CORRECT"},
+  {o:"Flight Instruments (PFD)",a:"CHECK",n:"No red X's."},
+  {o:"Altimeters — PFD (BARO)",a:"SET",sl:"a"},
+  {o:"Altimeters — Standby Altimeter",a:"SET",sl:"b",type:"sub"},
+  {o:"ALT SEL",a:"SET"},
+  {o:"Standby Flight Instruments",a:"CHECK"},
+  {o:"Fuel Quantity",a:"CHECK",n:"Verify level is correct."},
+  {o:"Mixture Control",a:"RICH"},
+  {o:"FUEL SELECTOR Valve",a:"SET BOTH"},
+  {o:"Autopilot",a:"ENGAGE",n:"Push AP button on either PFD or MFD bezel."},
+  {o:"Flight Controls",a:"CHECK",n:"Verify autopilot can be overpowered in both pitch and roll axes."},
+  {o:"A/P TRIM DISC Button",a:"PRESS",n:"Verify autopilot disengages and aural alert is heard."},
+  {o:"Flight Director",a:"OFF",n:"Push FD button on either PFD or MFD bezel."},
+  {o:"Elevator and Rudder Trim Controls",a:"SET FOR TAKEOFF"},
+  {o:"Throttle Control",a:"1800 RPM"},
+  {o:"MAGNETOS Switch",a:"CHECK",sl:"a",type:"sub",n:"RPM drop should not exceed 175 RPM on either magneto or 50 RPM differential between magnetos."},
+  {o:"Propeller Control",a:"CYCLE",sl:"b",type:"sub",n:"From high to low RPM; return to high RPM (push full in)."},
+  {o:"VAC Indicator",a:"CHECK",sl:"c",type:"sub"},
+  {o:"Engine Indicators",a:"CHECK",sl:"d",type:"sub"},
+  {o:"Ammeters and Voltmeters",a:"CHECK",sl:"e",type:"sub"},
+  {o:"Annunciators",a:"CHECK",n:"Verify no annunciators are shown."},
+  {o:"Throttle Control",a:"CHECK IDLE"},
+  {o:"Throttle Control",a:"1000 RPM or LESS"},
+  {o:"Throttle Control Friction Lock",a:"ADJUST"},
+  {o:"COM Frequency(s)",a:"SET"},
+  {o:"NAV Frequency(s)",a:"SET"},
+  {o:"FMS/GPS Flight Plan",a:"AS DESIRED"},
+  {o:"XPDR",a:"SET"},
+  {o:"CDI Softkey",a:"SELECT NAV SOURCE"},
+  {o:"CABIN PWR 12V Switch",a:"OFF"},
+  {o:"Wing Flaps",a:"UP - 20\u00B0",n:"10\u00B0 preferred."},
+  {o:"Cowl Flaps",a:"OPEN"},
+  {o:"Cabin Windows",a:"CLOSED and LOCKED"},
+  {o:"STROBE Light Switch",a:"ON"},
+  {o:"Brakes",a:"RELEASE"}
+]},
+{ g:"FLIGHT", t:"Takeoff", s:"Normal Takeoff", items:[
+  {o:"Wing Flaps",a:"UP - 20\u00B0",n:"10\u00B0 preferred."},
+  {o:"Throttle Control",a:"32 in.hg."},
+  {o:"Propeller Control",a:"2400 RPM"},
+  {o:"Mixture Control",a:"ADJUST",n:"To 24 GPH fuel flow."},
+  {o:"Elevator Control",a:"LIFT NOSEWHEEL",n:"At 50 - 60 KIAS."},
+  {o:"Climb Airspeed",a:"70 KIAS (FLAPS 20\u00B0) / 80 KIAS (FLAPS UP)"},
+  {o:"Wing Flaps",a:"RETRACT",n:"At safe altitude."}
+]},
+{ g:"FLIGHT", t:"Enroute Climb", s:"Normal Climb", items:[
+  {o:"Airspeed",a:"90 - 100 KIAS"},
+  {o:"Throttle Control",a:"25 in.hg."},
+  {o:"Propeller Control",a:"2400 RPM"},
+  {o:"Mixture Control",a:"16 GPH"},
+  {o:"FUEL SELECTOR Valve",a:"BOTH"},
+  {o:"Cowl Flaps",a:"OPEN as required"},
+  {o:"Oxygen Control Lever",a:"ON as required"}
+]},
+{ g:"FLIGHT", t:"Cruise", items:[
+  {o:"Power",a:"SET",n:"Sea Level to 15,000 ft: 15 - 28 in.hg. at 2000 - 2400 RPM.  15,000 to 20,000 ft: 15 - 27 in.hg. at 2000 - 2400 RPM."},
+  {o:"Elevator and Rudder Trim Controls",a:"ADJUST"},
+  {o:"Mixture Control",a:"LEAN",n:"For desired performance or economy."},
+  {o:"Cowl Flaps",a:"CLOSED"},
+  {o:"Oxygen Supply Pressure",a:"MONITOR QUANTITY",n:"If in use."},
+  {o:"FMS/GPS",a:"REVIEW and BRIEF",n:"OBS/SUSP softkey operation for holding pattern procedure (IFR)."}
+]},
+{ g:"FLIGHT", t:"Descent", items:[
+  {o:"Power",a:"AS DESIRED"},
+  {o:"Mixture",a:"ADJUST",n:"If necessary to make engine run smoothly."},
+  {o:"Cowl Flaps",a:"CLOSED"},
+  {o:"Altimeters — PFD (BARO)",a:"SET",sl:"a"},
+  {o:"Altimeters — Standby Altimeter",a:"SET",sl:"b",type:"sub"},
+  {o:"ALT SEL",a:"SET"},
+  {o:"CDI Softkey",a:"SELECT NAV SOURCE"},
+  {o:"FMS/GPS",a:"REVIEW and BRIEF",n:"OBS/SUSP softkey operation for holding pattern procedure (IFR)."},
+  {o:"FUEL SELECTOR Valve",a:"BOTH"},
+  {o:"Wing Flaps",a:"AS DESIRED",n:"UP - 10\u00B0 below 140 KIAS.  10\u00B0 - 20\u00B0 below 120 KIAS.  20\u00B0 - FULL below 100 KIAS."}
+]},
+{ g:"ARRIVAL", t:"Before Landing", items:[
+  {o:"Pilot and Passenger Seat Backs",a:"MOST UPRIGHT POSITION"},
+  {o:"Seats and Seat Belts",a:"SECURED and LOCKED"},
+  {o:"FUEL SELECTOR Valve",a:"BOTH"},
+  {o:"Mixture Control",a:"RICH"},
+  {o:"Propeller Control",a:"HIGH RPM",n:"Push full in."},
+  {o:"LAND and TAXI Light Switches",a:"ON"},
+  {o:"Autopilot",a:"OFF"},
+  {o:"CABIN PWR 12V Switch",a:"OFF"}
+]},
+{ g:"ARRIVAL", t:"Landing", s:"Normal Landing", items:[
+  {o:"Airspeed",a:"70 - 80 KIAS",n:"Flaps UP."},
+  {o:"Wing Flaps",a:"AS DESIRED",n:"UP - 10\u00B0 below 140 KIAS.  10\u00B0 - 20\u00B0 below 120 KIAS.  20\u00B0 - FULL below 100 KIAS."},
+  {o:"Airspeed",a:"60 - 70 KIAS",n:"Flaps FULL."},
+  {o:"Elevator and Rudder Trim Controls",a:"ADJUST"},
+  {o:"Touchdown",a:"MAIN WHEELS FIRST"},
+  {o:"Landing Roll",a:"LOWER NOSEWHEEL GENTLY"},
+  {o:"Braking",a:"MINIMUM REQUIRED"}
+]},
+{ g:"SHUTDOWN", t:"After Landing", items:[
+  {o:"Wing Flaps",a:"UP"},
+  {o:"Cowl Flaps",a:"OPEN"}
+]},
+{ g:"SHUTDOWN", t:"Securing Airplane", items:[
+  {o:"Parking Brake",a:"SET"},
+  {o:"Throttle Control",a:"IDLE",n:"Pull full out."},
+  {o:"Electrical Equipment",a:"OFF"},
+  {o:"AVIONICS Switch (BUS 1 and BUS 2)",a:"OFF"},
+  {o:"Mixture Control",a:"IDLE CUTOFF",n:"Pull full out."},
+  {o:"MAGNETOS Switch",a:"OFF"},
+  {o:"MASTER Switch (ALT and BAT)",a:"OFF"},
+  {o:"STBY BATT Switch",a:"OFF"},
+  {o:"Control Lock",a:"INSTALL"},
+  {o:"FUEL SELECTOR Valve",a:"LEFT or RIGHT",n:"To prevent crossfeeding between tanks."},
+  {o:"OXYGEN Control Lever",a:"OFF"},
+  {o:"Parachute Safety Pin",a:"INSTALL",crit:1,tag:"Added"},
+  {type:"photo",id:"end",o:"Tachometer",a:"PHOTOGRAPH AND LOG",
+   n:"Engine and aircraft hours after shutdown. Closes out the flight and your hours.",tag:"Added"}
+]}
+];
+
+/* ---------- storage: artifact storage -> localStorage -> memory ---------- */
+const MEM={};
+const S={
+  async get(k){
+    try{ if(window.storage){const r=await window.storage.get(k); return r?JSON.parse(r.value):null;} }catch(e){}
+    try{ const v=localStorage.getItem(k); if(v!=null) return JSON.parse(v);}catch(e){}
+    return MEM[k]??null;
+  },
+  async set(k,v){
+    MEM[k]=v;
+    try{ if(window.storage){await window.storage.set(k,JSON.stringify(v)); return;} }catch(e){}
+    try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){}
+  },
+  async del(k){
+    delete MEM[k];
+    try{ if(window.storage){await window.storage.delete(k); return;} }catch(e){}
+    try{ localStorage.removeItem(k); }catch(e){}
+  }
+};
+const K={cfg:"t182t.cfg", act:"t182t.active", idx:"t182t.log", one:id=>"t182t.flight."+id};
+
+/* ---------- state ---------- */
+let cfg={tail:"",partners:[],rate:"",cur:"USD"}, F=null, LOG=[], view="home",
+    sel=null, repId=null, repFrom="part", repBack=0, saveTimer=null, tick=null;
+const $=s=>document.querySelector(s);
+const app=$("#app"), keys=$("#keys");
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const CHK='<svg viewBox="0 0 24 24" fill="none" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
+const CAM='<svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>';
+
+const checkable=i=>i.type!=="note";
+const nCheck=p=>p.items.filter(checkable).length;
+function nDone(pi){const c=F.checks[pi]||{};let n=0;PHASES[pi].items.forEach((it,ii)=>{if(checkable(it)&&c[ii])n++});return n}
+const phaseOk=pi=>nDone(pi)===nCheck(PHASES[pi]);
+
+function save(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{if(F)S.set(K.act,F)},350)}
+function buzz(ms){try{navigator.vibrate&&navigator.vibrate(ms)}catch(e){}}
+let AC=null;
+function beep(ok){
+  if(cfg.mute)return;
+  try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+    const t=AC.currentTime,g=AC.createGain();g.connect(AC.destination);
+    g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.16,t+.02);
+    g.gain.exponentialRampToValueAtTime(.0001,t+(ok?.5:.16));
+    [ok?880:520,ok?1320:0].forEach((f,i)=>{if(!f)return;const o=AC.createOscillator();
+      o.type="sine";o.frequency.value=f;o.connect(g);o.start(t+i*.13);o.stop(t+(ok?.55:.2))});
+  }catch(e){}
+}
+function wake(){try{navigator.wakeLock&&navigator.wakeLock.request("screen").catch(()=>{})}catch(e){}}
+
+/* ---------- aircraft: fixed ---------- */
+const TAIL="N1322Y";
+/* ---------- partners on first run ---------- */
+const ROSTER=["Santiago Escobar","Adolfo Trujillo","David Guti\u00E9rrez"];
+
+/* ---------- partners: identity, totals, money ---------- */
+const newId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+const initials=n=>n.trim().split(/\s+/).slice(0,2).map(w=>w[0]||"").join("").toUpperCase()||"?";
+const partner=id=>cfg.partners.find(p=>p.id===id);
+/* a flight belongs to a partner id; older records only carry a name */
+const ownerOf=f=>f.pid||(cfg.partners.find(p=>p.name===f.pilot)||{}).id||"name:"+f.pilot;
+const ownerName=k=>String(k).startsWith("name:")?String(k).slice(5)
+  :(partner(k)||{name:"Removed partner"}).name;
+function tally(k){
+  const fl=LOG.filter(f=>ownerOf(f)===k);
+  return {fl,n:fl.length,eng:fl.reduce((a,f)=>a+(f.engH||0),0),ac:fl.reduce((a,f)=>a+(f.acH||0),0)};
+}
+function money(h){
+  const r=parseFloat(String(cfg.rate).replace(",","."));
+  if(!isFinite(r)||r<=0)return "";
+  return new Intl.NumberFormat(undefined,{maximumFractionDigits:0}).format(h*r)+" "+(cfg.cur||"");
+}
+
+/* ---------- boot ---------- */
+(async function(){
+  cfg=Object.assign({partners:[],rate:"",cur:"USD"},(await S.get(K.cfg))||{});
+  if(!cfg.partners.length&&Array.isArray(cfg.pilots))          /* migrate old name list */
+    cfg.partners=cfg.pilots.map(n=>({id:newId(),name:n}));
+  delete cfg.pilots; delete cfg.tail;
+  if(!cfg.seeded){                                             /* first run only */
+    ROSTER.forEach(n=>{if(!cfg.partners.some(p=>p.name===n))cfg.partners.push({id:newId(),name:n})});
+    cfg.seeded=1; await S.set(K.cfg,cfg);
+  }
+  LOG=(await S.get(K.idx))||[];
+  F=await S.get(K.act);
+  if(F&&F.pid)sel=F.pid;
+  go(F?"run":"home");
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden)wake()});
+})();
+
+function go(v){
+  view=v;
+  $("#strip").classList.toggle("hide",v==="home");
+  window.scrollTo(0,0);
+  ({home:vHome,run:vRun,sum:vSum,log:vLog,part:vPart,rep:vRep})[v]();
+  if(F){$("#sWho").textContent=F.pilot||"";$("#sTail").textContent=TAIL}
+  else $("#sWho").textContent="";
+  clearInterval(tick);
+  if(v==="run"&&F){elapsed();tick=setInterval(elapsed,1000)}else $("#sEt").textContent="";
+}
+function elapsed(){
+  const s=Math.floor((Date.now()-F.t0)/1000);
+  $("#sEt").textContent=String(Math.floor(s/3600)).padStart(2,"0")+":"+String(Math.floor(s/60)%60).padStart(2,"0");
+}
+
+/* ---------- home ---------- */
+function vHome(){
+  const act=cfg.partners.filter(p=>!p.archived);
+  app.innerHTML=`
+  <div class="hero">
+    <div class="k">Cessna &middot; Normal Procedures</div>
+    <h1>N1322Y<em>Cessna T182T NAV III &middot; GFC 700 AFCS</em></h1>
+    <p>Tap every line. Each checklist tells you when it is complete. Tachometer hours are captured at
+       start and shutdown, so every partner's share of maintenance is on record.</p>
+  </div>
+  <div class="wrap">
+    <div class="card">
+      <h2>Pilot in command</h2>
+      ${act.length?`<div class="idxlist">${act.map(p=>{
+        const t=tally(p.id);
+        return `<button class="pick${sel===p.id?" sel":""}" data-id="${p.id}">
+          <span class="av">${esc(initials(p.name))}</span>
+          <span class="p">${esc(p.name)}</span>
+          <span class="h">${t.eng.toFixed(1)} h</span></button>`}).join("")}</div>`
+      :`<p style="margin:0 0 14px;color:var(--dim);font-size:14px">No partners yet. Add everyone who flies this
+        aircraft, so hours land under the right name.</p>`}
+      <button class="retake" id="bMng" style="margin:12px 0 0">${act.length?"Manage partners":"Add partners"}</button>
+    </div>
+    <div class="idxlist" style="margin-top:16px">${
+      PHASES.map((p,i)=>{
+        const st=F?(phaseOk(i)?"ok":(F.i===i?"now":"")):"";
+        const tail=F?(phaseOk(i)?"DONE":(F.i===i?"HERE":nDone(i)+"/"+nCheck(p))):nCheck(p);
+        return `<div class="grp${i&&PHASES[i-1].g===p.g?" hide":""}">${p.g}</div>
+      <button class="ph ${st}" data-i="${i}"><span class="n">${String(i+1).padStart(2,"0")}</span>
+      <span class="t">${esc(p.t)}${p.s?" &middot; "+esc(p.s):""}</span>
+      <span class="s">${tail}</span></button>`}).join("")}
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h2>Logbook</h2>
+      ${LOG.length?`<div class="tot"><span>${LOG.length} flight${LOG.length>1?"s":""} recorded</span>
+        <b>${LOG.reduce((a,f)=>a+(f.engH||0),0).toFixed(1)} h</b></div>`:
+        `<p style="margin:0;color:var(--dim);font-size:14px">No flights yet. Your first one lands here.</p>`}
+      <button class="retake" id="bLog" style="margin:14px 0 0">Open logbook</button>
+    </div>
+    <p style="color:var(--dimmer);font-size:11.5px;line-height:1.6;margin:22px 2px 8px">
+      Cockpit aid only. The approved POH stays on board and governs.
+      Verify every line against the handbook before use.</p>
+  </div>`;
+  keys.className="keys";
+  keys.innerHTML=F
+    ? `<button class="k2 go" id="kGo">Resume flight<small>${esc(F.pilot)}</small></button><button id="kNew">New</button>`
+    : `<button class="k2 ${sel?"go":""}" id="kGo" ${sel?"":"disabled"}>Begin preflight${
+        sel?`<small>${esc((partner(sel)||{}).name||"")}</small>`:`<small>Select a pilot</small>`}</button>`;
+  app.querySelectorAll(".pick").forEach(b=>b.onclick=()=>{sel=b.dataset.id;vHome()});
+  app.querySelectorAll(".ph").forEach(b=>b.onclick=()=>{
+    if(F){F.i=+b.dataset.i;save();go("run")}else if(sel)start(+b.dataset.i);else vHome()});
+  $("#bMng").onclick=()=>go("part");
+  $("#bLog").onclick=()=>go("log");
+  $("#kGo").onclick=()=>F?go("run"):start(0);
+  if($("#kNew"))$("#kNew").onclick=()=>ask("Discard the flight in progress?","Discard",()=>{
+    S.del(K.act);F=null;go("home")},1);
+}
+
+async function start(i){
+  const p=partner(sel); if(!p)return;
+  F={id:newId(),pid:p.id,pilot:p.name,tail:TAIL,t0:Date.now(),i:i||0,checks:{},cap:{}};
+  await S.set(K.act,F); wake(); go("run");
+}
+
+/* ---------- partners ---------- */
+function vPart(){
+  app.innerHTML=`
+  <div class="head"><div class="meta"><span class="idx">PARTNERS</span></div>
+    <h1>Who flies this aircraft<small>Hours are billed to the name selected before each flight</small></h1></div>
+  <div class="wrap">
+    <div class="card"><h2>Add a partner</h2>
+      <input class="tin" id="iNew" placeholder="Full name" autocomplete="off">
+      <button class="retake" id="bAdd" style="margin:12px 0 0">Add</button></div>
+    ${cfg.partners.length?`<div class="idxlist">${cfg.partners.map(p=>{
+      const t=tally(p.id),m=money(t.eng);
+      return `<button class="pick" data-e="${p.id}">
+        <span class="av"${p.archived?' style="opacity:.4"':""}>${esc(initials(p.name))}</span>
+        <span class="p">${esc(p.name)}${p.archived?' <span class="s">ARCHIVED</span>':""}
+          <span class="sub2">${t.n} flight${t.n===1?"":"s"}${m?" &middot; "+m:""}</span></span>
+        <span class="h">${t.eng.toFixed(1)} h</span></button>`}).join("")}</div>`:""}
+    <div class="card" style="margin-top:16px"><h2>Maintenance rate</h2>
+      <p style="margin:0 0 12px;color:var(--dim);font-size:13.5px;line-height:1.5">
+        Cost per engine hour. Leave it empty to record hours only.</p>
+      <div class="hrs">
+        <div class="fld"><label>Rate per hour</label>
+          <input inputmode="decimal" id="iRate" placeholder="0" value="${esc(cfg.rate||"")}"></div>
+        <div class="fld"><label>Currency</label>
+          <input id="iCur" maxlength="4" placeholder="USD" value="${esc(cfg.cur||"")}"
+            style="text-transform:uppercase"></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:12px"><h2>Aircraft</h2>
+      <div style="display:flex;align-items:baseline;gap:10px">
+        <span style="font-family:var(--mono);font-size:26px;letter-spacing:.06em;color:var(--cyan)">${TAIL}</span>
+        <span class="lbl">Cessna T182T NAV III</span></div></div>
+    <p style="color:var(--dimmer);font-size:11.5px;line-height:1.6;margin:20px 2px 8px">
+      Profiles keep hours attributed correctly. They are not a login and hold no password.</p>
+  </div>`;
+  keys.className="keys";
+  keys.innerHTML=`<button class="k2" id="kHome">Done</button>`;
+  const persist=async()=>{
+    cfg.rate=$("#iRate").value.replace(",",".").replace(/[^\d.]/g,"");
+    cfg.cur=$("#iCur").value.trim().toUpperCase();
+    await S.set(K.cfg,cfg);
+  };
+  const add=async()=>{
+    const n=$("#iNew").value.trim(); if(!n)return $("#iNew").focus();
+    if(cfg.partners.some(p=>p.name.toLowerCase()===n.toLowerCase()))
+      return ask(`${n} is already on the list.`,"OK",()=>{});
+    cfg.partners.push({id:newId(),name:n});
+    await persist(); vPart();
+  };
+  $("#bAdd").onclick=add;
+  $("#iNew").onkeydown=e=>{if(e.key==="Enter")add()};
+  ["iRate","iCur"].forEach(id=>$("#"+id).onchange=persist);
+  $("#kHome").onclick=async()=>{await persist();go("home")};
+  app.querySelectorAll("[data-e]").forEach(b=>b.onclick=()=>edit(b.dataset.e));
+}
+function edit(id){
+  const p=partner(id),t=tally(id);
+  $("#sheetIn").innerHTML=`
+    <div style="padding:18px 20px 6px"><div style="font-size:17px;font-weight:700">${esc(p.name)}</div>
+      <div style="color:var(--dim);font-size:13px;margin-top:4px">${t.n} flight${t.n===1?"":"s"} &middot; ${t.eng.toFixed(1)} engine hours</div></div>
+    <button id="eRep">Open report</button>
+    <button id="eRen">Rename</button>
+    <button id="eArc">${p.archived?"Restore to active list":"Archive (hide from pilot list)"}</button>
+    <button id="eDel" class="dg">Remove from list</button>
+    <button id="eX">Close</button>`;
+  $("#sheet").classList.add("on");
+  const close=()=>$("#sheet").classList.remove("on");
+  $("#eX").onclick=close;
+  $("#eRep").onclick=()=>{close();repId=id;repFrom="part";go("rep")};
+  $("#eRen").onclick=()=>{close();
+    $("#sheetIn").innerHTML=`<div style="padding:18px 20px 10px"><input class="tin" id="rn" value="${esc(p.name)}"></div>
+      <button id="rY">Save name</button><button id="rN">Cancel</button>`;
+    $("#sheet").classList.add("on");
+    $("#rN").onclick=()=>$("#sheet").classList.remove("on");
+    $("#rY").onclick=async()=>{const v=$("#rn").value.trim();
+      if(v){p.name=v;await S.set(K.cfg,cfg)} $("#sheet").classList.remove("on");vPart()};
+    setTimeout(()=>$("#rn").focus(),80);
+  };
+  $("#eArc").onclick=async()=>{p.archived=!p.archived;if(sel===id&&p.archived)sel=null;
+    await S.set(K.cfg,cfg);close();vPart()};
+  $("#eDel").onclick=()=>{close();
+    ask(t.n?`${p.name} has ${t.n} flight${t.n===1?"":"s"} on record. Those flights stay in the logbook under this name. Remove the profile anyway?`
+        :`Remove ${p.name} from the list?`,"Remove",async()=>{
+      cfg.partners=cfg.partners.filter(x=>x.id!==id);
+      if(sel===id)sel=null;
+      await S.set(K.cfg,cfg);vPart()},1)};
+}
+
+/* ---------- per-partner report ---------- */
+function vRep(){
+  const k=repId,t=tally(k),m=money(t.eng);
+  app.innerHTML=`
+  <div class="head"><div class="meta"><span class="idx">PARTNER REPORT</span></div>
+    <h1>${esc(ownerName(k))}<small>${TAIL} &middot; ${t.n} flight${t.n===1?"":"s"}</small></h1></div>
+  <div class="wrap">
+    <div class="big">
+      <div class="stat"><span class="lbl">Engine hours</span><div class="v g">${t.eng.toFixed(1)}</div>
+        <div class="sub">across ${t.n} flight${t.n===1?"":"s"}</div></div>
+      <div class="stat"><span class="lbl">${m?"Maintenance share":"Aircraft hours"}</span>
+        <div class="v">${m||t.ac.toFixed(1)}</div>
+        <div class="sub">${m?`${cfg.rate} ${cfg.cur||""} per hour`:"tach / airframe"}</div></div>
+    </div>
+    ${t.n?`<div class="idxlist">${t.fl.map(f=>`<button class="lg" data-f="${f.id}">
+      <span class="d">${new Date(f.date).toLocaleDateString(undefined,{day:"2-digit",month:"short",year:"2-digit"})}</span>
+      <span class="p">${f.engS??"—"} &rarr; ${f.engE??"—"}${f.missing?` <span style="color:var(--amber)">&#9679;</span>`:""}</span>
+      <span class="h">${f.engH!=null?f.engH.toFixed(1):"—"}</span></button>`).join("")}</div>
+      <div id="sheetArea"></div>`
+    :`<div class="empty">No flights recorded for this partner yet.</div>`}
+  </div>`;
+  keys.className="keys";
+  keys.innerHTML=`<button id="kB">Back</button>${t.n?`<button class="k2" id="kSheet">Tachometer sheet</button>`:""}`;
+  app.querySelectorAll(".lg").forEach(b=>b.onclick=()=>{repBack=1;detail(b.dataset.f)});
+  $("#kB").onclick=()=>go(repFrom);
+  if($("#kSheet"))$("#kSheet").onclick=()=>photoSheet(t.fl);
+}
+async function photoSheet(fl){
+  const box=$("#sheetArea");
+  box.innerHTML=`<div class="card" style="margin-top:16px"><h2>Tachometer sheet</h2>
+    <p id="pgs" style="margin:0;color:var(--dim);font-size:13px">Loading photos…</p>
+    <div id="pgrid" style="margin-top:14px;display:flex;flex-direction:column;gap:16px"></div></div>`;
+  box.scrollIntoView({behavior:"smooth",block:"start"});
+  const grid=$("#pgrid");
+  for(let n=0;n<fl.length;n++){
+    const f=fl[n], d=(await S.get(K.one(f.id)))||{}, s=d.start||{}, e=d.end||{};
+    $("#pgs").textContent=`${n+1} of ${fl.length} flights`;
+    const cell=document.createElement("div");
+    cell.innerHTML=`<div class="lbl" style="margin-bottom:8px">
+        ${new Date(f.date).toLocaleDateString()} &middot; ${f.engH!=null?f.engH.toFixed(1)+" H":"hours incomplete"}</div>
+      <div class="pair">
+        <figure><figcaption>Start ${f.engS??""}</figcaption>${s.img
+          ?`<img src="${s.img}" data-lens="${s.img}" alt="">`:`<div class="empty" style="padding:22px">No photo</div>`}</figure>
+        <figure><figcaption>Shutdown ${f.engE??""}</figcaption>${e.img
+          ?`<img src="${e.img}" data-lens="${e.img}" alt="">`:`<div class="empty" style="padding:22px">No photo</div>`}</figure>
+      </div>`;
+    grid.appendChild(cell);
+    cell.querySelectorAll("[data-lens]").forEach(i=>i.onclick=()=>lens(i.dataset.lens));
+  }
+  $("#pgs").textContent=`${fl.length} flight${fl.length===1?"":"s"} &middot; tap any photo to enlarge`;
+}
+
+/* ---------- run ---------- */
+function vRun(){
+  const pi=F.i, P=PHASES[pi], c=F.checks[pi]||{}, tot=nCheck(P), done=nDone(pi), ok=done===tot;
+  let n=0;
+  const rows=P.items.map((it,ii)=>{
+    if(it.type==="note")return `<div class="note"><span class="lbl">Note</span><p>${esc(it.n)}</p></div>`;
+    n++;
+    if(it.type==="photo")return capCard(it,!!c[ii],ii);
+    return `<button class="row${it.type==="sub"?" sub":""}${it.crit?" crit":""}${c[ii]?" done":""}" data-ii="${ii}">
+      <span class="box${c[ii]?" on":""}">${CHK}</span><span class="tx">
+      ${it.tag?`<span class="tag a">${esc(it.tag)}</span>`:""}
+      ${it.sl?`<span class="sl">${it.sl})</span>`:""}
+      <span class="ob">${esc(it.o)}</span><span class="ac">${esc(it.a)}</span>
+      ${it.n?`<span class="nt">${esc(it.n)}</span>`:""}</span></button>`;
+  }).join("");
+
+  app.innerHTML=`
+  <div class="head"><div class="meta">
+    <span class="idx">${String(pi+1).padStart(2,"0")} / ${String(PHASES.length).padStart(2,"0")}</span>
+    <span class="lbl">${P.g}</span></div>
+    <h1>${esc(P.t)}${P.s?`<small>${esc(P.s)}</small>`:""}</h1></div>
+  <div class="seg">${P.items.filter(checkable).map((_,k)=>{
+    const idx=P.items.findIndex((it,j)=>checkable(it)&&P.items.slice(0,j).filter(checkable).length===k);
+    return `<i class="${c[idx]?"on":""}"></i>`}).join("")}</div>
+  <div class="count"><span class="lbl">${done} of ${tot} checked</span>
+    <b style="color:${ok?"var(--green)":"var(--fg)"}">${ok?"COMPLETE":tot-done+" LEFT"}</b></div>
+  ${ok?`<div class="ann"><b>Checklist complete</b><span>${esc(P.t)}${P.s?" — "+esc(P.s):""}${
+      pi<PHASES.length-1?". Next: "+esc(PHASES[pi+1].t)+".":". Close out the flight to log your hours."}</span></div>`:""}
+  <div class="list">${rows}</div>`;
+
+  keys.className="keys";
+  const last=pi===PHASES.length-1;
+  keys.innerHTML=`<button id="kBack" ${pi?"":"disabled"}>Back</button>
+    <button class="k2 ${ok?"go":""}" id="kNext">${last?(ok?"Close out flight":"Close out"):"Next checklist"}
+      ${ok?"":`<small>${tot-done} unchecked</small>`}</button>`;
+
+  app.querySelectorAll(".row").forEach(b=>b.onclick=()=>tap(pi,+b.dataset.ii));
+  $("#kBack").onclick=()=>{F.i--;save();go("run")};
+  $("#kNext").onclick=()=>{
+    if(ok)return adv(last);
+    ask(`${tot-done} item${tot-done>1?"s":""} still unchecked. They will be flagged in the flight record.`,
+        "Continue anyway",()=>adv(last),1);
+  };
+  wire(pi);
+}
+function adv(last){
+  if(last)return go("sum");
+  F.i++;save();go("run");
+}
+function tap(pi,ii){
+  F.checks[pi]=F.checks[pi]||{};
+  const on=!F.checks[pi][ii];
+  on?F.checks[pi][ii]=1:delete F.checks[pi][ii];
+  save(); buzz(on?18:0);
+  const was=phaseOk(pi);
+  vRun();
+  if(on&&was)beep(1);
+}
+
+/* ---------- tach capture ---------- */
+function capCard(it,done,ii){
+  const d=F.cap[it.id]||{};
+  return `<div class="cap${done?" done":""}" id="cap-${it.id}">
+    <button class="captop" data-cap="${ii}" data-id="${it.id}">
+      <span class="box${done?" on":""}">${CHK}</span>
+      <span class="tx">${it.tag?`<span class="tag c">${esc(it.tag)}</span>`:""}
+      <span class="ob">${esc(it.o)}</span><span class="ac">${esc(it.a)}</span>
+      <span class="nt">${esc(it.n)}</span></span></button>
+    <div class="shot" data-shoot="${it.id}">${d.img
+      ? `<img src="${d.img}" alt="Tachometer">`
+      : `<span class="ph">${CAM}<div>Tap to photograph</div></span>`}</div>
+    ${d.img?`<button class="retake" data-shoot="${it.id}">Retake photo</button>`:""}
+    <div class="hrs">
+      <div class="fld"><label>Engine hours</label>
+        <input inputmode="decimal" data-h="${it.id}.eng" placeholder="0.0" class="${d.eng?"ok":""}" value="${esc(d.eng??"")}"></div>
+      <div class="fld"><label>Aircraft hours</label>
+        <input inputmode="decimal" data-h="${it.id}.ac" placeholder="0.0" class="${d.ac?"ok":""}" value="${esc(d.ac??"")}"></div>
+    </div>
+    <div class="hint" id="hint-${it.id}">Photo and both readings required</div>
+    <input type="file" accept="image/*" capture="environment" class="hide" data-file="${it.id}">
+  </div>`;
+}
+const capReady=id=>{const d=F.cap[id]||{};return !!(d.img&&d.eng&&d.ac)};
+function wire(pi){
+  app.querySelectorAll("[data-shoot]").forEach(el=>el.onclick=()=>
+    app.querySelector(`[data-file="${el.dataset.shoot}"]`).click());
+  app.querySelectorAll("[data-file]").forEach(inp=>inp.onchange=async e=>{
+    const f=e.target.files[0]; if(!f)return;
+    const id=inp.dataset.file;
+    try{ (F.cap[id]=F.cap[id]||{}).img=await shrink(f); }
+    catch(err){ return alert("That photo could not be read. Take it again.") }
+    save(); vRun();
+  });
+  app.querySelectorAll(".captop").forEach(b=>b.onclick=()=>{
+    const id=b.dataset.id, ii=+b.dataset.cap;
+    if(!capReady(id)){$("#hint-"+id).classList.add("on");buzz(60);return}
+    tap(pi,ii);
+  });
+  app.querySelectorAll("[data-h]").forEach(inp=>{
+    inp.oninput=()=>{
+      const [id,k]=inp.dataset.h.split(".");
+      const v=inp.value.replace(",",".").replace(/[^\d.]/g,"");
+      if(v!==inp.value)inp.value=v;
+      (F.cap[id]=F.cap[id]||{})[k]=v;
+      inp.classList.toggle("ok",!!v);
+      if(capReady(id))$("#hint-"+id).classList.remove("on");
+      const ii=PHASES[pi].items.findIndex(x=>x.type==="photo"&&x.id===id);
+      if(ii>-1&&(F.checks[pi]||{})[ii]&&!capReady(id)){
+        delete F.checks[pi][ii];
+        const cd=$("#cap-"+id);cd.classList.remove("done");cd.querySelector(".box").classList.remove("on");
+        paint(pi);
+      }
+      save();
+    };
+  });
+}
+function paint(pi){ /* light refresh of counters without losing keyboard focus */
+  const P=PHASES[pi],c=F.checks[pi]||{},tot=nCheck(P),done=nDone(pi);
+  const segs=app.querySelectorAll(".seg i");
+  P.items.filter(checkable).forEach((_,k)=>{
+    const idx=P.items.findIndex((it,j)=>checkable(it)&&P.items.slice(0,j).filter(checkable).length===k);
+    if(segs[k])segs[k].className=c[idx]?"on":"";
+  });
+  const l=app.querySelector(".count .lbl"),b=app.querySelector(".count b");
+  if(l)l.textContent=`${done} of ${tot} checked`;
+  if(b){b.textContent=done===tot?"COMPLETE":(tot-done)+" LEFT";b.style.color=done===tot?"var(--green)":"var(--fg)"}
+}
+function shrink(file){
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onerror=()=>rej();
+    r.onload=()=>{
+      const im=new Image();
+      im.onerror=()=>rej();
+      im.onload=()=>{
+        const M=1400,sc=Math.min(1,M/Math.max(im.width,im.height));
+        const cv=document.createElement("canvas");
+        cv.width=Math.round(im.width*sc);cv.height=Math.round(im.height*sc);
+        cv.getContext("2d").drawImage(im,0,0,cv.width,cv.height);
+        res(cv.toDataURL("image/jpeg",.72));
+      };
+      im.src=r.result;
+    };
+    r.readAsDataURL(file);
+  });
+}
+
+/* ---------- summary ---------- */
+const num=v=>{const n=parseFloat(String(v??"").replace(",","."));return isFinite(n)?n:null};
+function delta(a,b){const x=num(a),y=num(b);return(x!=null&&y!=null&&y>=x)?y-x:null}
+function vSum(){
+  const s=F.cap.start||{},e=F.cap.end||{};
+  const dE=delta(s.eng,e.eng), dA=delta(s.ac,e.ac);
+  const missing=[];
+  PHASES.forEach((P,pi)=>{const c=F.checks[pi]||{};
+    P.items.forEach((it,ii)=>{if(checkable(it)&&!c[ii])missing.push(`${P.t} — ${it.o} · ${it.a}`)})});
+  const mins=Math.round((Date.now()-F.t0)/60000);
+  app.innerHTML=`
+  <div class="head"><div class="meta"><span class="idx">FLIGHT RECORD</span></div>
+    <h1>${esc(F.pilot)}<small>${TAIL} &middot; ${new Date(F.t0).toLocaleDateString()} &middot; ${
+      Math.floor(mins/60)}h ${mins%60}m on the app</small></h1></div>
+  <div class="wrap">
+    <div class="big">
+      <div class="stat"><span class="lbl">Engine hours flown</span>
+        <div class="v ${dE!=null?"g":""}">${dE!=null?dE.toFixed(1):"—"}</div>
+        <div class="sub">${s.eng||"—"} &rarr; ${e.eng||"—"}</div></div>
+      <div class="stat"><span class="lbl">Aircraft hours flown</span>
+        <div class="v ${dA!=null?"g":""}">${dA!=null?dA.toFixed(1):"—"}</div>
+        <div class="sub">${s.ac||"—"} &rarr; ${e.ac||"—"}</div></div>
+    </div>
+    ${dE==null||dA==null?`<div class="ann warn"><b>Hours incomplete</b>
+      <span>Both readings are needed to compute your maintenance share. Check the shutdown number is not lower than the start.</span></div><div style="height:12px"></div>`:""}
+    <div class="card"><h2>Tachometer</h2><div class="pair">
+      <figure><figcaption>Start</figcaption>${s.img?`<img src="${s.img}" data-lens="${s.img}" alt="Start tachometer">`:`<div class="shot" style="margin:0"><span class="ph"><div>No photo</div></span></div>`}</figure>
+      <figure><figcaption>Shutdown</figcaption>${e.img?`<img src="${e.img}" data-lens="${e.img}" alt="Shutdown tachometer">`:`<div class="shot" style="margin:0"><span class="ph"><div>No photo</div></span></div>`}</figure>
+    </div></div>
+    <div class="card"><h2>Checklists</h2>
+      ${missing.length
+        ? `<p style="margin:0 0 10px;font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--amber)">${missing.length} UNCHECKED</p>
+           <ul class="miss">${missing.slice(0,14).map(m=>`<li>${esc(m)}</li>`).join("")}
+           ${missing.length>14?`<li>+ ${missing.length-14} more</li>`:""}</ul>`
+        : `<p style="margin:0;font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--green)">ALL ${PHASES.length} CHECKLISTS COMPLETE</p>`}
+    </div>
+  </div>`;
+  keys.className="keys";
+  keys.innerHTML=`<button id="kBack">Back</button><button class="k2 go" id="kSave">Save to logbook</button>`;
+  app.querySelectorAll("[data-lens]").forEach(i=>i.onclick=()=>lens(i.dataset.lens));
+  $("#kBack").onclick=()=>{F.i=PHASES.length-1;go("run")};
+  $("#kSave").onclick=async()=>{
+    LOG.unshift({id:F.id,pid:F.pid,pilot:F.pilot,tail:F.tail,date:F.t0,
+      engS:num(s.eng),engE:num(e.eng),acS:num(s.ac),acE:num(e.ac),
+      engH:dE,acH:dA,missing:missing.length});
+    await S.set(K.idx,LOG.slice(0,200));
+    await S.set(K.one(F.id),{start:s,end:e});
+    await S.del(K.act); F=null; go("log");
+  };
+}
+
+/* ---------- logbook ---------- */
+function vLog(){
+  const keysBy=[...new Set(LOG.map(ownerOf))]
+    .map(k=>({k,...tally(k)})).sort((a,b)=>b.eng-a.eng);
+  const rate=money(1);
+  app.innerHTML=`
+  <div class="head"><div class="meta"><span class="idx">LOGBOOK</span></div>
+    <h1>Hours by partner<small>Engine hours${rate?" &middot; "+esc(cfg.rate)+" "+esc(cfg.cur||"")+" per hour":""}</small></h1></div>
+  <div class="wrap">
+    ${LOG.length?`
+    <div class="idxlist">${keysBy.map(t=>`<button class="pick" data-r="${esc(t.k)}">
+      <span class="av">${esc(initials(ownerName(t.k)))}</span>
+      <span class="p">${esc(ownerName(t.k))}<span class="sub2">${t.n} flight${t.n===1?"":"s"}${
+        money(t.eng)?" &middot; "+money(t.eng):""}</span></span>
+      <span class="h">${t.eng.toFixed(1)} h</span></button>`).join("")}</div>
+    <div class="card" style="margin-top:16px"><h2>All flights</h2>
+      <div class="idxlist">${LOG.map(f=>`<button class="lg" data-f="${f.id}">
+        <span class="d">${new Date(f.date).toLocaleDateString(undefined,{day:"2-digit",month:"short"})}</span>
+        <span class="p">${esc(f.pilot)}${f.missing?` <span style="color:var(--amber)">&#9679;</span>`:""}</span>
+        <span class="h">${f.engH!=null?f.engH.toFixed(1):"—"}</span></button>`).join("")}</div>
+      <button class="retake" id="kCsv" style="margin-top:14px">Export CSV</button></div>`
+    :`<div class="empty">No flights recorded yet.<br>Finish a flight and it lands here with both tachometer photos.</div>`}
+  </div>`;
+  keys.className="keys";
+  keys.innerHTML=`<button class="k2" id="kHome">Home</button>`;
+  $("#kHome").onclick=()=>go("home");
+  app.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{repId=b.dataset.r;repFrom="log";go("rep")});
+  app.querySelectorAll(".lg").forEach(b=>b.onclick=()=>{repBack=0;detail(b.dataset.f)});
+  if($("#kCsv"))$("#kCsv").onclick=csv;
+}
+async function detail(id){
+  const f=LOG.find(x=>x.id===id), d=(await S.get(K.one(id)))||{};
+  const s=d.start||{},e=d.end||{};
+  app.innerHTML=`
+  <div class="head"><div class="meta"><span class="idx">${new Date(f.date).toLocaleString()}</span></div>
+    <h1>${esc(f.pilot)}<small>${TAIL}</small></h1></div>
+  <div class="wrap">
+    <div class="big">
+      <div class="stat"><span class="lbl">Engine</span><div class="v g">${f.engH!=null?f.engH.toFixed(1):"—"}</div>
+        <div class="sub">${f.engS??"—"} &rarr; ${f.engE??"—"}</div></div>
+      <div class="stat"><span class="lbl">Aircraft</span><div class="v g">${f.acH!=null?f.acH.toFixed(1):"—"}</div>
+        <div class="sub">${f.acS??"—"} &rarr; ${f.acE??"—"}</div></div>
+    </div>
+    <div class="card"><h2>Tachometer</h2><div class="pair">
+      <figure><figcaption>Start</figcaption>${s.img?`<img src="${s.img}" data-lens="${s.img}" alt="">`:"<div class='empty' style='padding:20px'>No photo</div>"}</figure>
+      <figure><figcaption>Shutdown</figcaption>${e.img?`<img src="${e.img}" data-lens="${e.img}" alt="">`:"<div class='empty' style='padding:20px'>No photo</div>"}</figure>
+    </div></div>
+    ${f.missing?`<div class="ann warn"><b>${f.missing} unchecked</b><span>Items were skipped during this flight.</span></div>`:""}
+  </div>`;
+  keys.innerHTML=`<button id="kB">Back</button><button class="k2 dg" id="kDel" style="color:var(--red)">Delete flight</button>`;
+  app.querySelectorAll("[data-lens]").forEach(i=>i.onclick=()=>lens(i.dataset.lens));
+  $("#kB").onclick=()=>go(repBack?"rep":"log");
+  $("#kDel").onclick=()=>ask("Delete this flight and both photos? Hours will be removed from the pilot total.","Delete",async()=>{
+    LOG=LOG.filter(x=>x.id!==id);await S.set(K.idx,LOG);await S.del(K.one(id));go("log")},1);
+}
+function csv(){
+  const rows=[["date","partner","aircraft","engine_start","engine_end","engine_hours",
+               "aircraft_start","aircraft_end","aircraft_hours","rate_per_hour","amount","currency","unchecked"]]
+    .concat(LOG.map(f=>{
+      const r=parseFloat(String(cfg.rate).replace(",","."));
+      const amt=(isFinite(r)&&r>0&&f.engH!=null)?(f.engH*r).toFixed(2):"";
+      return [new Date(f.date).toISOString().slice(0,10),f.pilot,f.tail||"",f.engS??"",f.engE??"",
+        f.engH!=null?f.engH.toFixed(1):"",f.acS??"",f.acE??"",f.acH!=null?f.acH.toFixed(1):"",
+        isFinite(r)&&r>0?r:"",amt,cfg.cur||"",f.missing||0];
+    }));
+  const txt="\uFEFF"+rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([txt],{type:"text/csv;charset=utf-8"}));
+  a.download="t182t-hours.csv";a.click();
+}
+
+/* ---------- overlays ---------- */
+function lens(src){$("#lensImg").src=src;$("#lens").classList.add("on")}
+$("#lens").onclick=()=>$("#lens").classList.remove("on");
+function ask(msg,label,fn,danger){
+  $("#sheetIn").innerHTML=`<div style="padding:18px 20px 8px;color:var(--dim);font-size:14px;line-height:1.5">${esc(msg)}</div>
+    <button id="aY" class="${danger?"dg":""}">${esc(label)}</button><button id="aN">Cancel</button>`;
+  $("#sheet").classList.add("on");
+  $("#aY").onclick=()=>{$("#sheet").classList.remove("on");fn()};
+  $("#aN").onclick=()=>$("#sheet").classList.remove("on");
+}
+$("#sheet").onclick=e=>{if(e.target.id==="sheet")$("#sheet").classList.remove("on")};
+$("#sMenu").onclick=()=>{
+  $("#sheetIn").innerHTML=`
+    <button id="mIdx">All checklists</button>
+    <button id="mSnd">Sound ${cfg.mute?"off":"on"}</button>
+    ${view==="run"?`<button id="mRst">Reset this checklist</button>`:""}
+    <button id="mLog">Logbook</button>
+    <button id="mPrt">Partners</button>
+    ${F?`<button id="mAb" class="dg">Abort flight</button>`:""}
+    <button id="mX">Close</button>`;
+  $("#sheet").classList.add("on");
+  const close=()=>$("#sheet").classList.remove("on");
+  $("#mX").onclick=close;
+  $("#mIdx").onclick=()=>{close();go("home")};
+  $("#mLog").onclick=()=>{close();go("log")};
+  $("#mPrt").onclick=()=>{close();go("part")};
+  $("#mSnd").onclick=async()=>{cfg.mute=!cfg.mute;await S.set(K.cfg,cfg);close()};
+  if($("#mRst"))$("#mRst").onclick=()=>{close();ask("Clear every check on this checklist?","Reset",()=>{
+    delete F.checks[F.i];
+    PHASES[F.i].items.forEach(it=>{if(it.type==="photo")delete F.cap[it.id]});
+    save();go("run")},1)};
+  if($("#mAb"))$("#mAb").onclick=()=>{close();ask("Abort the flight in progress? Checks and photos are lost.","Abort",()=>{
+    S.del(K.act);F=null;go("home")},1)};
+};
+</script>
+<script src="/sync.js"></script>
