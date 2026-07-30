@@ -890,18 +890,21 @@ function prepOCR(dataUrl){
     res(cv.toDataURL("image/png"));};im.src=dataUrl;});
 }
 function pickReading(text,kind){
-  const t=String(text||"").toUpperCase().replace(/O/g,"0").replace(/,/g,".");
+  let t=String(text||"").toUpperCase().replace(/O/g,"0").replace(/,/g,".");
+  t=t.replace(/1\s*\/\s*1?0/g," ");            /* quitar el rótulo 1/10 del tambor */
   if(kind==="eng"){
     const m=t.match(/ENG\s*HRS?[^0-9]{0,6}([0-9]{3,6}(?:\.[0-9])?)/);
     if(m)return trimNum(m[1]);
   }
-  /* grupos "0632 9" del tambor (décimas en rueda aparte) */
-  const g=t.match(/([0-9]{3,5})\s+([0-9])(?![0-9])/);
-  if(g)return trimNum(g[1]+"."+g[2]);
-  const nums=(t.match(/[0-9]{3,6}(?:\.[0-9])?/g)||[]).sort((a,b)=>b.length-a.length);
+  const nums=(t.match(/[0-9]{4,6}(?:\.[0-9])?/g)||[]).sort((a,b)=>b.length-a.length);
   for(const n of nums){
-    if(n.includes("."))return trimNum(n);
-    if(n.length>=5)return trimNum(n.slice(0,-1)+"."+n.slice(-1));
+    if(n.includes("."))return trimNum(n);      /* decimal explícito: lectura completa */
+    if(n.length===5)return trimNum(n.slice(0,4)+"."+n.slice(4)); /* 4 ruedas + décima */
+  }
+  /* tambor tipo Quartz: el entero lee confiable, la décima (video inverso) no.
+     Devolver lectura parcial: el piloto completa solo la décima. */
+  for(const n of nums){
+    if(n.length>=4){const p=trimNum(n.slice(0,4));if(p)return {partial:p};}
   }
   return nums.length?trimNum(nums[0]):null;
 }
@@ -937,7 +940,12 @@ async function ocrFill(id,k,img){
   try{v=await readTach(img,key)}catch(e){}
   const d=F.cap[id]=F.cap[id]||{};
   const inp=app.querySelector(`[data-h="${id}.${key}"]`);
-  if(v!=null&&!d[key]){
+  if(v&&v.partial&&!d[key]){
+    /* entero leído, décima incierta: el piloto la completa (el ítem no se puede
+       marcar hasta que lo haga) */
+    if(inp&&!inp.value){inp.value=v.partial+"."}
+    if(note)note.textContent="Se leyó "+v.partial+" — completa la décima y verifica.";
+  }else if(typeof v==="string"&&!d[key]){
     d[key]=v;
     if(inp){inp.value=v;inp.classList.add("ok")}
     if(capReady(id)){const h=$("#hint-"+id);if(h)h.classList.remove("on")}
