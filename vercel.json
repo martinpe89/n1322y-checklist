@@ -1,22 +1,4 @@
 {
-  "projectId": "to-be-set",
-  "orgId": "to-be-set",
-  "builds": [
-    {
-      "src": "api/**/*.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
-    }
-  ],
-  "env": {
-    "DATABASE_URL": "@database_url",
-    "BLOB_READ_WRITE_TOKEN": "@blob_token",
-    "ACCESS_CODE": "@access_code",
-    "SESSION_SECRET": "@session_secret"
-  }
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "cleanUrls": true
 }
