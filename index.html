@@ -6,6 +6,21 @@
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <title>T182T Checklist</title>
+<script>
+/* Captura el evento de instalación PWA lo antes posible: se dispara una sola
+   vez y muy temprano, antes de que sync.js cargue. Lo guardamos en window para
+   que el banner lo pueda usar. */
+window.__pwaPrompt = null;
+window.addEventListener("beforeinstallprompt", function (e) {
+  e.preventDefault();
+  window.__pwaPrompt = e;
+  window.dispatchEvent(new Event("pwa-installable"));
+});
+window.addEventListener("appinstalled", function () {
+  window.__pwaPrompt = null;
+  window.dispatchEvent(new Event("pwa-installed"));
+});
+</script>
 <style>
 :root{
   --bg:#07090C; --panel:#10141A; --panel2:#171E27; --line:#242D39;

@@ -446,10 +446,10 @@
   }
 
   const IKEY = "t182t.install.dismissed";
-  let deferredInstall = null;
   const isStandalone = () =>
     window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
   const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const canPrompt = () => !!window.__pwaPrompt;     // evento nativo capturado en el <head>
 
   const installBar = document.createElement("div");
   installBar.id = "installBar";
@@ -470,10 +470,18 @@
   function showInstallBar() {
     if (isStandalone()) return;
     if (lsGet(IKEY, 0) > Date.now() - 7 * 24 * 3600 * 1000) return;  // no insistir por 7 días
-    if (isIOS()) {
-      installBar.querySelector("#ibSub").innerHTML =
-        'Tap <b style="color:var(--cyan,#39B7F0)">Share</b> &rarr; <b style="color:var(--cyan,#39B7F0)">Add to Home Screen</b>.';
-      installBar.querySelector("#ibGo").style.display = "none";
+    const sub = installBar.querySelector("#ibSub");
+    const go = installBar.querySelector("#ibGo");
+    if (canPrompt()) {
+      sub.textContent = "Full screen, works with no signal in the cockpit.";
+      go.textContent = "Install"; go.style.display = "";
+    } else if (isIOS()) {
+      sub.innerHTML = 'Tap <b style="color:var(--cyan,#39B7F0)">Share</b> &rarr; <b style="color:var(--cyan,#39B7F0)">Add to Home Screen</b>.';
+      go.style.display = "none";
+    } else {
+      // Chromium sin prompt disponible (ya instalable desde el menú, o criterio no listo)
+      sub.innerHTML = 'Open the browser menu &rarr; <b style="color:var(--cyan,#39B7F0)">Install app</b>.';
+      go.style.display = "none";
     }
     installBar.style.display = "flex";
     pillEl.style.bottom = "calc(var(--key,64px) + env(safe-area-inset-bottom) + 88px)";
@@ -485,20 +493,18 @@
   }
   installBar.querySelector("#ibX").onclick = () => hideInstallBar(true);
   installBar.querySelector("#ibGo").onclick = async () => {
-    if (!deferredInstall) return hideInstallBar(true);
-    deferredInstall.prompt();
-    const { outcome } = await deferredInstall.userChoice;
-    deferredInstall = null;
-    hideInstallBar(outcome !== "accepted");
+    const p = window.__pwaPrompt;
+    if (!p) { showInstallBar(); return; }   // no hay prompt: mostrar la guía correcta, no cerrar
+    hideInstallBar(false);
+    p.prompt();                              // dispara el diálogo nativo del navegador
+    try { await p.userChoice; } catch (e) {}
+    window.__pwaPrompt = null;               // el evento es de un solo uso
   };
-  window.addEventListener("beforeinstallprompt", (e) => {
-    e.preventDefault();
-    deferredInstall = e;                 // Android/Chrome: instalación nativa en un clic
-    showInstallBar();
-  });
-  window.addEventListener("appinstalled", () => hideInstallBar(false));
-  // iOS nunca dispara beforeinstallprompt: mostrar la guía tras un momento de uso
-  setTimeout(() => { if (isIOS()) showInstallBar(); }, 4000);
+  // el <head> pudo capturar el evento antes de que existiera este banner
+  window.addEventListener("pwa-installable", showInstallBar);
+  window.addEventListener("pwa-installed", () => hideInstallBar(false));
+  // mostrar el banner: si ya hay prompt, o en iOS con su guía, tras un momento de uso
+  setTimeout(() => { if (canPrompt() || isIOS()) showInstallBar(); }, 3500);
 
   /* ---------- disparadores --------------------------------------------------- */
   window.addEventListener("hashchange", () => { inviteEnroll(); });
