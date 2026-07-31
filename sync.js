@@ -427,11 +427,85 @@
   }
   hook();
 
+  /* ---------- enlace de invitación: #c=CODIGO enrola el dispositivo solo ----- */
+  async function inviteEnroll() {
+    const m = /[#&]c(?:ode)?=([^&]+)/.exec(location.hash || "");
+    if (!m || !navigator.onLine) return false;
+    const code = decodeURIComponent(m[1]);
+    history.replaceState(null, "", location.pathname);   // el código no se queda en la barra
+    try {
+      const r = await fetch(API + "/session", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code }) });
+      if (r.ok) { const j = await r.json(); roster = j.roster || null; authed = true; pill(); flush(); maybeAskPin(); return true; }
+    } catch (e) {}
+    return false;
+  }
+
+  /* ---------- PWA: service worker + banner de instalación en un clic --------- */
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => { navigator.serviceWorker.register("/sw.js").catch(() => {}); });
+  }
+
+  const IKEY = "t182t.install.dismissed";
+  let deferredInstall = null;
+  const isStandalone = () =>
+    window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+  const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+  const installBar = document.createElement("div");
+  installBar.id = "installBar";
+  installBar.style.cssText =
+    "position:fixed;left:12px;right:12px;bottom:calc(var(--key,64px) + env(safe-area-inset-bottom) + 14px);" +
+    "z-index:54;display:none;align-items:center;gap:12px;padding:13px 14px;border:1px solid var(--line,#242D39);" +
+    "border-radius:12px;background:rgba(16,20,26,.97);backdrop-filter:blur(8px);max-width:560px;margin:0 auto";
+  installBar.innerHTML =
+    '<img src="/icon-192.png" alt="" style="width:38px;height:38px;border-radius:9px;flex:none">' +
+    '<div style="flex:1;min-width:0">' +
+    '<div style="font-size:13.5px;font-weight:700;color:var(--fg,#E6EDF5)">Install N1322Y on this device</div>' +
+    '<div id="ibSub" style="font-size:11.5px;color:var(--dim,#77848F);margin-top:2px">Full screen, works with no signal in the cockpit.</div></div>' +
+    '<button id="ibGo" style="flex:none;height:40px;padding:0 16px;border:0;border-radius:9px;background:rgba(47,208,123,.16);' +
+    'color:var(--green,#2FD07B);font-family:var(--mono,monospace);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer">Install</button>' +
+    '<button id="ibX" aria-label="Dismiss" style="flex:none;width:30px;height:30px;border:0;background:none;color:var(--dimmer,#4A5560);font-size:16px;cursor:pointer">&#10005;</button>';
+  (document.body || document.documentElement).appendChild(installBar);
+
+  function showInstallBar() {
+    if (isStandalone()) return;
+    if (lsGet(IKEY, 0) > Date.now() - 7 * 24 * 3600 * 1000) return;  // no insistir por 7 días
+    if (isIOS()) {
+      installBar.querySelector("#ibSub").innerHTML =
+        'Tap <b style="color:var(--cyan,#39B7F0)">Share</b> &rarr; <b style="color:var(--cyan,#39B7F0)">Add to Home Screen</b>.';
+      installBar.querySelector("#ibGo").style.display = "none";
+    }
+    installBar.style.display = "flex";
+    pillEl.style.bottom = "calc(var(--key,64px) + env(safe-area-inset-bottom) + 88px)";
+  }
+  function hideInstallBar(remember) {
+    installBar.style.display = "none";
+    pillEl.style.bottom = "";
+    if (remember) lsSet(IKEY, Date.now());
+  }
+  installBar.querySelector("#ibX").onclick = () => hideInstallBar(true);
+  installBar.querySelector("#ibGo").onclick = async () => {
+    if (!deferredInstall) return hideInstallBar(true);
+    deferredInstall.prompt();
+    const { outcome } = await deferredInstall.userChoice;
+    deferredInstall = null;
+    hideInstallBar(outcome !== "accepted");
+  };
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredInstall = e;                 // Android/Chrome: instalación nativa en un clic
+    showInstallBar();
+  });
+  window.addEventListener("appinstalled", () => hideInstallBar(false));
+  // iOS nunca dispara beforeinstallprompt: mostrar la guía tras un momento de uso
+  setTimeout(() => { if (isIOS()) showInstallBar(); }, 4000);
+
   /* ---------- disparadores --------------------------------------------------- */
   window.addEventListener("online", () => { pill(); flush(); });
   window.addEventListener("offline", pill);
   setInterval(() => flush(), 25000);
   setTimeout(async () => {
+    if (await inviteEnroll()) return;
     if (!navigator.onLine) return pill();
     try {
       const r = await fetch(API + "/state", { headers: { "x-device-id": deviceId } });
