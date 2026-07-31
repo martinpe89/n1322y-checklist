@@ -1,5 +1,5 @@
 /* N1322Y — service worker: app shell disponible sin señal (cabina) */
-const V = "n1322y-v1";
+const V = "n1322y-v2";
 const SHELL = ["/", "/sync.js", "/manifest.json", "/icon-192.png", "/icon-512.png"];
 
 self.addEventListener("install", (e) => {

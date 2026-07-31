@@ -446,9 +446,15 @@
   }
 
   const IKEY = "t182t.install.dismissed";
+  const UA = navigator.userAgent;
   const isStandalone = () =>
     window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
-  const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isIOS = () =>
+    /iphone|ipad|ipod/i.test(UA) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);   // iPad iPadOS
+  const isChromeIOS = () => /CriOS/i.test(UA);     // Chrome en iPhone: NO puede instalar PWA
+  const isFirefoxIOS = () => /FxiOS/i.test(UA);
+  const isSafariIOS = () => isIOS() && !isChromeIOS() && !isFirefoxIOS();
   const canPrompt = () => !!window.__pwaPrompt;     // evento nativo capturado en el <head>
 
   const installBar = document.createElement("div");
@@ -470,19 +476,8 @@
   function showInstallBar() {
     if (isStandalone()) return;
     if (lsGet(IKEY, 0) > Date.now() - 7 * 24 * 3600 * 1000) return;  // no insistir por 7 días
-    const sub = installBar.querySelector("#ibSub");
-    const go = installBar.querySelector("#ibGo");
-    if (canPrompt()) {
-      sub.textContent = "Full screen, works with no signal in the cockpit.";
-      go.textContent = "Install"; go.style.display = "";
-    } else if (isIOS()) {
-      sub.innerHTML = 'Tap <b style="color:var(--cyan,#39B7F0)">Share</b> &rarr; <b style="color:var(--cyan,#39B7F0)">Add to Home Screen</b>.';
-      go.style.display = "none";
-    } else {
-      // Chromium sin prompt disponible (ya instalable desde el menú, o criterio no listo)
-      sub.innerHTML = 'Open the browser menu &rarr; <b style="color:var(--cyan,#39B7F0)">Install app</b>.';
-      go.style.display = "none";
-    }
+    installBar.querySelector("#ibSub").textContent = "Full screen, works with no signal in the cockpit.";
+    installBar.querySelector("#ibGo").textContent = canPrompt() ? "Install" : "How to";
     installBar.style.display = "flex";
     pillEl.style.bottom = "calc(var(--key,64px) + env(safe-area-inset-bottom) + 88px)";
   }
@@ -491,19 +486,77 @@
     pillEl.style.bottom = "";
     if (remember) lsSet(IKEY, Date.now());
   }
+
+  const IOS_SHARE = '<svg viewBox="0 0 24 24" width="17" height="17" style="vertical-align:-3px" fill="none" stroke="#39B7F0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13M8 7l4-4 4 4"/><path d="M6 12H5a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7a1 1 0 0 0-1-1h-1"/></svg>';
+  const IOS_PLUS = '<svg viewBox="0 0 24 24" width="15" height="15" style="vertical-align:-2px" fill="none" stroke="#39B7F0" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8v8M8 12h8"/></svg>';
+
+  function step(n, html) {
+    return '<div style="display:flex;gap:11px;align-items:flex-start;margin-bottom:12px">' +
+      '<span style="flex:none;width:22px;height:22px;border-radius:50%;border:1px solid var(--line,#242D39);' +
+      'font-family:var(--mono,monospace);font-size:11px;color:var(--cyan,#39B7F0);display:grid;place-items:center">' + n + "</span>" +
+      '<div style="flex:1;font-size:13.5px;line-height:1.5;color:var(--fg,#E6EDF5)">' + html + "</div></div>";
+  }
+
+  function copyLink() {
+    const url = location.origin + "/";
+    try { navigator.clipboard.writeText(url); return true; } catch (e) { return false; }
+  }
+
+  function installHelp() {
+    let title, body, foot = "";
+    if (isChromeIOS() || isFirefoxIOS()) {
+      // En iPhone SOLO Safari puede instalar una PWA. Chrome/Firefox iOS no pueden.
+      title = "Open in Safari to install";
+      body =
+        '<p style="margin:0 0 16px;font-size:13px;color:var(--dim,#77848F);line-height:1.5">On iPhone, only <b style="color:var(--fg,#E6EDF5)">Safari</b> can install the app to your home screen. Two taps:</p>' +
+        step(1, 'Tap <b>Copy link</b> below, open <b>Safari</b>, and paste the address.') +
+        step(2, "In Safari, tap the <b>Share</b> icon " + IOS_SHARE + " at the bottom.") +
+        step(3, 'Choose <b>Add to Home Screen</b> ' + IOS_PLUS + ' &rarr; <b>Add</b>.');
+      foot =
+        '<button id="ihCopy" class="go" style="flex:1.5;height:52px;border:0;border-radius:10px;background:rgba(57,183,240,.16);' +
+        'color:var(--cyan,#39B7F0);font-family:var(--mono,monospace);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer">Copy link</button>';
+    } else if (isSafariIOS()) {
+      title = "Add to Home Screen";
+      body =
+        step(1, "Tap the <b>Share</b> icon " + IOS_SHARE + " in Safari's bottom bar.") +
+        step(2, "Scroll down and tap <b>Add to Home Screen</b> " + IOS_PLUS + ".") +
+        step(3, "Tap <b>Add</b>. N1322Y lands on your home screen — full screen, offline-ready.");
+    } else {
+      title = "Install from the menu";
+      body =
+        step(1, "Open the browser <b>menu</b> (&#8942; or &#8230;).") +
+        step(2, 'Tap <b>Install app</b> or <b>Add to Home screen</b>.') +
+        step(3, "Confirm. N1322Y opens full screen and works with no signal.");
+    }
+    const el = sheet(
+      '<div class="k">Install &middot; N1322Y</div>' +
+      "<h3>" + title + "</h3>" +
+      '<div style="margin:14px 0 6px">' + body + "</div>" +
+      '<div class="syncRow">' +
+      '<button id="ihClose">Close</button>' + foot +
+      "</div>"
+    );
+    el.querySelector("#ihClose").onclick = closeSheet;
+    const cp = el.querySelector("#ihCopy");
+    if (cp) cp.onclick = () => { cp.textContent = copyLink() ? "Copied ✓" : "Copy failed"; };
+  }
+
   installBar.querySelector("#ibX").onclick = () => hideInstallBar(true);
   installBar.querySelector("#ibGo").onclick = async () => {
     const p = window.__pwaPrompt;
-    if (!p) { showInstallBar(); return; }   // no hay prompt: mostrar la guía correcta, no cerrar
-    hideInstallBar(false);
-    p.prompt();                              // dispara el diálogo nativo del navegador
-    try { await p.userChoice; } catch (e) {}
-    window.__pwaPrompt = null;               // el evento es de un solo uso
+    if (p) {                                 // Android / desktop: instalación nativa de un toque
+      hideInstallBar(false);
+      p.prompt();
+      try { await p.userChoice; } catch (e) {}
+      window.__pwaPrompt = null;
+      return;
+    }
+    installHelp();                           // iPhone y demás: guía paso a paso (nunca "no hace nada")
   };
   // el <head> pudo capturar el evento antes de que existiera este banner
   window.addEventListener("pwa-installable", showInstallBar);
   window.addEventListener("pwa-installed", () => hideInstallBar(false));
-  // mostrar el banner: si ya hay prompt, o en iOS con su guía, tras un momento de uso
+  // mostrar el banner tras un momento de uso (hay prompt nativo, o es iOS)
   setTimeout(() => { if (canPrompt() || isIOS()) showInstallBar(); }, 3500);
 
   /* ---------- disparadores --------------------------------------------------- */
