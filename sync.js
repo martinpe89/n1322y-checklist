@@ -501,6 +501,7 @@
   setTimeout(() => { if (isIOS()) showInstallBar(); }, 4000);
 
   /* ---------- disparadores --------------------------------------------------- */
+  window.addEventListener("hashchange", () => { inviteEnroll(); });
   window.addEventListener("online", () => { pill(); flush(); });
   window.addEventListener("offline", pill);
   setInterval(() => flush(), 25000);
